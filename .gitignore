@@ -1,0 +1,15 @@
+blib
+pm_to_blib
+*.sw?
+Makefile
+Makefile.old
+MANIFEST.bak
+*.tar.gz
+/inc/
+META.yml
+.prove
+*~
+/.build/
+/NAP-policy-*/
+/t/tmp/
+/docs/html/
