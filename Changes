@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.2     2011-07-19 15:21:37 Europe/London
+- add Data::Printer dependency
+
 0.0.1     2011-07-19 10:57:38 Europe/London
 
 - Initial release
