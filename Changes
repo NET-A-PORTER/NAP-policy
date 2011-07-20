@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.4     2011-07-20 18:02:48 Europe/London
+- avoid importing Test::Deep::blessed in 'test' mode
+
 0.0.3     2011-07-20 10:28:31 Europe/London
 - add Dist::Zilla::Plugin::Pkg*NoCritic; they will be removed when the
   "real" dzil plugins do the right thing

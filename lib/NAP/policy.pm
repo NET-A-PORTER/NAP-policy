@@ -46,7 +46,7 @@ will prevent C<import> from being auto-cleaned
 will add:
 
   use lib 't/lib';
-  use Test::Most;
+  use Test::Most '!blessed';
   use Data::Printer;
 
 =back
@@ -101,8 +101,13 @@ sub import {
             require lib;
             lib->import('t/lib');
             # yes, this is ugly, but I couldn't find a better way;
-            eval "package $caller;use Test::Most;use Data::Printer;1"
-                or die "Couldn't set up testing policy: $@";
+            eval <<"MAGIC" or die "Couldn't set up testing policy: $@";
+package $caller;
+use Test::Most '-Test::Deep';
+use Test::Deep '!blessed';
+use Data::Printer;
+1;
+MAGIC
         }
     }
 
