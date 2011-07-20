@@ -2,6 +2,10 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.3     2011-07-20 10:28:31 Europe/London
+- add Dist::Zilla::Plugin::Pkg*NoCritic; they will be removed when the
+  "real" dzil plugins do the right thing
+
 0.0.2     2011-07-19 15:21:37 Europe/London
 - add Data::Printer dependency
 

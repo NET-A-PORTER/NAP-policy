@@ -1,7 +1,5 @@
-## no critic
 package NAP::policy;
 # ABSTRACT: enable all of the features of Modern Perl at NAP with one command
-## critic
 
 =head1 NAME
 

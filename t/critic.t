@@ -6,7 +6,7 @@ use Perl::Critic;
 my @files = File::Find::Rule
     ->file()
     ->name( qr/\.(t|pl|pm)$/ )
-    ->in( 'lib' );
+    ->in( 'lib/NAP' );
 
 my $profile = NAP::policy->critic_profile();
 note "using $profile";

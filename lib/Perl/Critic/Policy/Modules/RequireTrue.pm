@@ -1,7 +1,5 @@
-## no critic
 package Perl::Critic::Policy::Modules::RequireTrue;
 # ABSTRACT: don't be critical if we 'use true'
-## critic
 use 5.006001;
 use strict;
 use warnings;
@@ -11,8 +9,6 @@ use base 'Perl::Critic::Policy::Modules::RequireEndWithOne';
 
 Readonly::Scalar my $EXPL => q{Must end with a recognizable true value, or use NAP::policy};
 Readonly::Scalar my $DESC => q{Module does not end with "1;" and does not use NAP::policy};
-
-#-----------------------------------------------------------------------------
 
 sub supported_parameters {
     return (
@@ -61,3 +57,11 @@ sub violates {
 }
 
 1;
+
+=begin Pod::Coverage
+
+violates
+
+supported_parameters
+
+=end Pod::Coverage
