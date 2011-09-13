@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.5     2011-09-13 15:56:59 Europe/London
+- "dzil rpmbuild" command
+
 0.0.4     2011-07-20 18:02:48 Europe/London
 - avoid importing Test::Deep::blessed in 'test' mode
 
