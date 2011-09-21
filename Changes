@@ -2,6 +2,11 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.6     2011-09-21 14:35:14 Europe/London
+- version provider for NAP-style versions
+- rpmbuild now uses our versions
+- building RPMs is factored out, should be usable without dzil
+
 0.0.5     2011-09-13 15:56:59 Europe/London
 - "dzil rpmbuild" command
 
