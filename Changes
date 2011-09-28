@@ -2,6 +2,10 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.7     2011-09-28 10:09:38 Europe/London
+- NAPGitVersion inherited from PkgDist, causing that plugin to be
+  executed stealthily. Fixd.
+
 0.0.6     2011-09-21 14:35:14 Europe/London
 - version provider for NAP-style versions
 - rpmbuild now uses our versions

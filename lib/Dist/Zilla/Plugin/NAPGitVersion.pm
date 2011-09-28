@@ -7,8 +7,6 @@ use Dist::Zilla 4 ();
 use Moose;
 use namespace::autoclean;
 use NAP::GitVersion;
-extends 'Dist::Zilla::Plugin::PkgDist';
-
 with 'Dist::Zilla::Role::VersionProvider';
 
 =head1 METHODS
