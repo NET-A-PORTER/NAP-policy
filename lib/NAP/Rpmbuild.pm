@@ -213,7 +213,7 @@ sub _build_rpmbuild_cmd {
 my %TEMPLATE_CONFIG = (
     BLOCKS => {
         NAPDIRS => <<'EOF',
-%define NAP_BASE_DIR /opt/xt/deploy/[% deploydir %]
+%define NAP_BASE_DIR /opt/[% deploydir %]
 %define NAP_CONF_DIR /etc/[% sysdir %]
 %define NAP_LOGS_DIR /var/log/nap/[% sysdir %]
 %define NAP_PID_DIR  /var/run/nap/[% sysdir %]
