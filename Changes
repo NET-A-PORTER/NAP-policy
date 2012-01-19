@@ -2,7 +2,15 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.10    2012-01-19 17:40:14 Europe/London
+- update Perl::Critic profile after upstream release
+
+0.0.9     2011-11-15 10:07:15 Europe/London
+- bump to perl 5.14
+
 0.0.8     2011-10-18 09:56:51 Europe/London
+- introductory documentation
+- use /opt instead of /op/xt/deploy as RPM installation prefix
 
 0.0.7     2011-09-28 10:09:38 Europe/London
 - NAPGitVersion inherited from PkgDist, causing that plugin to be

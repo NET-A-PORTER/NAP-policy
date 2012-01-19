@@ -52,12 +52,12 @@ In more detail: useful imports
   your module. Now that you don't have to load ``Carp`` manually, you
   have no excuses.
 
-- ``features '5.12'``
+- ``features '5.14'``
 
-  You get ``given/when``, ``say`` and the smart-match operator. Please
+  You get ``given/when``, ``say``, lexical character semantic for
+  string operators and regexes, and the smart-match operator. Please
   don't use the smart-match, it's too complicated to make sense of
-  (and may well be on its way out starting from 5.16). We will update
-  this to ``5.14`` in the near future.
+  (and may well be on its way out starting from 5.16).
 
 - ``namespace::autoclean``
 

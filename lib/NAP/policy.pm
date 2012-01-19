@@ -23,7 +23,12 @@ This module will do the same as:
   use TryCatch;
   use Carp;
   use namespace::autoclean;
-  use 5.012;
+  use feature ':5.14';
+
+The C<use feature> enables C<say>, C<state>, C<switch> and
+C<unicode_strings>. In the unlikely case you need to deal with binary
+strings, remember to C<use bytes> in the smallest sensible lexical
+scope.
 
 In addition, some parameters give additional behaviour:
 
@@ -73,7 +78,7 @@ sub import {
 
     strict->import();
     warnings->import('FATAL'=>'all');
-    feature->import( ':5.12' );
+    feature->import( ':5.14' );
     utf8->import($caller);
     true->import();
     TryCatch->import({into=>$caller});
