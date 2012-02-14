@@ -2,6 +2,8 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.11    2012-02-14 17:18:42 Europe/London
+
 0.0.10    2012-01-19 17:40:14 Europe/London
 - update Perl::Critic profile after upstream release
 

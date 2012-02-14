@@ -42,9 +42,17 @@ will import L<Moose>, and make your class immutable
 
 will import L<Moose::Role>
 
+=item C<'exception'>
+
+will make your class derived from L<NAP::Exception>
+
 =item C<'exporter'>
 
 will prevent C<import> from being auto-cleaned
+
+=item C<'overloads'>
+
+will prevent operator overloads from being auto-cleaned
 
 =item C<'test'>
 
@@ -58,7 +66,7 @@ will add:
 
 =cut
 
-use 5.012;
+use 5.014;
 use strict;
 use warnings;
 use utf8 ();
@@ -96,9 +104,25 @@ sub import {
             require Moose::Role;
             Moose::Role->import({into=>$caller});
         };
+        when ('exception') {
+            require Moose;
+            Moose->import({into=>$caller});
+            Class::MOP::get_metaclass_by_name($caller)->superclasses('NAP::Exception');
+            # if the exception uses NAP::Exception::Role::StackTrace,
+            # the inlined constructor won't work properly (there's an
+            # C<around new>!, so we avoid inlining it
+            after_runtime {
+                $caller->meta->make_immutable(inline_constructor=>0);
+            }
+        };
         when ('exporter') {
             on_scope_end {
                 __PACKAGE__->mark_as_method('import',$caller);
+            }
+        };
+        when ('overloads') {
+            on_scope_end {
+                __PACKAGE__->mark_overloads_as_methods($caller);
             }
         };
         when ('test') {
@@ -113,7 +137,7 @@ use Test::Deep '!blessed';
 use Data::Printer;
 1;
 MAGIC
-        }
+        };
     }
 
     # this must come after the on_scope_end call above, otherwise the
@@ -161,6 +185,28 @@ sub mark_as_method {
             ),
         )
     );
+
+    return;
+}
+
+=head2 C<mark_overloads_as_methods>
+
+  NAP::policy->mark_overloads_as_methods($package);
+
+Heavily inspired from L<MooseX::MarkAsMethods>. Mark an operator
+overload as a method, protecting it from L<namespace::autoclean>.
+
+=cut
+
+sub mark_overloads_as_methods {
+    my ($self,$class) = @_;
+
+    $class //= caller;
+
+    my $meta=Class::MOP::Class->initialize($class);
+    my @overloads = grep { /^\(/ }
+        keys %{$meta->get_all_package_symbols('CODE')};
+    $self->mark_as_method($_,$class) for @overloads;
 
     return;
 }
