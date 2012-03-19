@@ -218,6 +218,15 @@ my %TEMPLATE_CONFIG = (
 %define NAP_LOGS_DIR /var/log/nap/[% sysdir %]
 %define NAP_PID_DIR  /var/run/nap/[% sysdir %]
 EOF
+        INSTALL => <<'EOF',
+rm -rf %{buildroot}
+install -m 0755 -d $RPM_BUILD_ROOT/%NAP_BASE_DIR
+rsync -al [% dirs.join(' ') %] $RPM_BUILD_ROOT/%NAP_BASE_DIR
+echo %{VERSION} > ${RPM_BUILD_ROOT}/%{NAP_BASE_DIR}/VERSION
+mkdir -p $RPM_BUILD_ROOT%sysconfdir
+install -m 0755 -d $RPM_BUILD_ROOT/%NAP_LOGS_DIR
+install -m 0755 -d $RPM_BUILD_ROOT/%NAP_PID_DIR
+EOF
     },
     VARIABLES => {
         SETUP => <<'EOF',
@@ -272,7 +281,6 @@ sub _create_spec {
 
     my $spec_in = $self->spec_in_file;
 
-    my $spec_in_fh = $spec_in->openr;
     my $basename = $spec_in->basename;$basename =~ s{\.in$}{};
     my $spec_out = $spec_in->parent->file($basename);
     my $spec_out_fh = $spec_out->openw;
@@ -289,14 +297,14 @@ sub _create_spec {
         $self->tarball_dirname;
 
     my $template = Template->new(\%TEMPLATE_CONFIG);
-    $template->process($spec_in_fh,
+    $template->process($spec_in->stringify,
                        {},
                        $spec_out_fh,
                        {},
                    )
         || die $template->error();
 
-    close $spec_in_fh;close $spec_out_fh;
+    close $spec_out_fh;
 
     return $spec_out;
 }

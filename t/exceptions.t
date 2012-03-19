@@ -48,7 +48,6 @@ subtest 'simple message with undef' => sub {
     package My::Exc2 {
         use NAP::policy 'exception';
         extends 'My::Exc';
-        with 'NAP::Exception::Role::StackTrace';
         has '+stuff' => ( is => 'ro', isa => 'Int', default => 7 );
         has '+message' => ( default => "count: %{stuff}i\n\nStack trace: %{stack_trace}s" );
     }
@@ -72,6 +71,24 @@ subtest 'simple message with undef' => sub {
         like($e->stack_trace->as_string,
              qr{\A\s*at \Q$file\E line \d+\n\tmain::throw_something at \Q$file\E line \d+\b},
              'stack trace start where expected');
+    };
+}
+
+{
+    package My::Exc3 {
+        use NAP::policy 'exception';
+        with 'NAP::Exception::Role::NoStackTrace';
+
+        has '+message' => ( default => "Stack trace: %{stack_trace}s" );
+    }
+
+    subtest 'no stack trace' => sub {
+        eval {
+            My::Exc3->throw();
+          }; my $e = $@;
+        like("$e",
+             qr{\A Stack\ trace:\ \z}smx,
+             'stack trace is fake');
     };
 }
 
