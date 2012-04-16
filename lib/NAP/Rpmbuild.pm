@@ -275,6 +275,7 @@ install -m 0755 -d $RPM_BUILD_ROOT/%NAP_LOGS_DIR
 install -m 0755 -d $RPM_BUILD_ROOT/%NAP_PID_DIR
 EOF
     },
+    RELATIVE => 1,
 );
 sub _create_spec {
     my ($self) = @_;

@@ -2,6 +2,8 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.14    2012-04-16 13:44:27 Europe/London
+
 0.0.13    2012-03-19 10:10:06 Europe/London
 - better exception objects, with & without stack traces, and documented
 - NAP::RpmBuild now provides a INSTALL block with a 'dirs' array
