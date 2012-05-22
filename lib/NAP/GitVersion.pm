@@ -2,7 +2,7 @@ package NAP::GitVersion;
 # ABSTRACT: function to get $nearest_tag-$distance-g$hash
 use Moose;
 use MooseX::Singleton;
-use Git::Wrapper;
+use Git::Wrapper 0.020;
 use namespace::autoclean;
 
 =head1 SYNOPSIS
@@ -70,7 +70,7 @@ sub _build_version_info {
     my $git  = Git::Wrapper->new($self->git_dir);
     my @commits =
         map { m{^([a-f0-9]+) \x00 (.*?) \x00 }ix ? [ $1, _parse_tag($2) ] : () }
-            $git->_cmd(log => {
+            $git->RUN(log => {
                 topo_order => 1,
                 decorate => 'full',
                 pretty => 'format:%h%x00%d%x00',
