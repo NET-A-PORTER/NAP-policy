@@ -54,6 +54,15 @@ will prevent C<import> from being auto-cleaned
 
 will prevent operator overloads from being auto-cleaned
 
+=item C<'dont_clean'>
+
+this options takes a value:
+
+  dont_clean => [ 'subname', 'another_name' ],
+
+it will prevent the specified sub names from being auto-cleaned (yes,
+C<'exporter'> is equivalent to C<< dont_clean => ['import'] >>)
+
 =item C<'test'>
 
 will add:
@@ -79,6 +88,7 @@ use namespace::autoclean;
 use B::Hooks::EndOfScope;
 use Hook::AfterRuntime;
 use File::ShareDir ();
+use Data::OptList;
 
 sub import {
     my ($class,@opts) = @_;
@@ -92,52 +102,78 @@ sub import {
     TryCatch->import({into=>$caller});
     Sub::Import->import('Carp',{into=>$caller});
 
-    for (@opts) {
-        when ('class') {
-            require Moose;
-            Moose->import({into=>$caller});
-            after_runtime {
-                $caller->meta->make_immutable;
+    @opts = @{
+        Data::OptList::mkopt(
+            \@opts,
+            {
+                moniker => 'NAP::policy import options',
             }
-        };
-        when ('role') {
-            require Moose::Role;
-            Moose::Role->import({into=>$caller});
-        };
-        when ('exception') {
-            require Moose;
-            Moose->import({into=>$caller});
-            Class::MOP::get_metaclass_by_name($caller)->superclasses('NAP::Exception');
-            # if the exception uses NAP::Exception::Role::StackTrace,
-            # the inlined constructor won't work properly (there's an
-            # C<around new>!, so we avoid inlining it
-            after_runtime {
-                $caller->meta->make_immutable(inline_constructor=>0);
-            }
-        };
-        when ('exporter') {
-            on_scope_end {
-                __PACKAGE__->mark_as_method('import',$caller);
-            }
-        };
-        when ('overloads') {
-            on_scope_end {
-                __PACKAGE__->mark_overloads_as_methods($caller);
-            }
-        };
-        when ('test') {
-            ## no critic ProhibitStringyEval
-            require lib;
-            lib->import('t/lib');
-            # yes, this is ugly, but I couldn't find a better way;
-            eval <<"MAGIC" or die "Couldn't set up testing policy: $@";
+        )
+      };
+
+    for my $opt_spec (@opts) {
+        my ($opt,$opt_args) = @$opt_spec;
+        given ($opt) {
+            when ('class') {
+                require Moose;
+                Moose->import({into=>$caller});
+                after_runtime {
+                    $caller->meta->make_immutable;
+                }
+            };
+            when ('role') {
+                require Moose::Role;
+                Moose::Role->import({into=>$caller});
+            };
+            when ('exception') {
+                require Moose;
+                Moose->import({into=>$caller});
+                Class::MOP::get_metaclass_by_name($caller)->superclasses('NAP::Exception');
+                # if the exception uses NAP::Exception::Role::StackTrace,
+                # the inlined constructor won't work properly (there's an
+                # C<around new>!, so we avoid inlining it
+                after_runtime {
+                    $caller->meta->make_immutable(inline_constructor=>0);
+                }
+            };
+            when ('exporter') {
+                on_scope_end {
+                    __PACKAGE__->mark_as_method('import',$caller);
+                }
+            };
+            when ('overloads') {
+                on_scope_end {
+                    __PACKAGE__->mark_overloads_as_methods($caller);
+                }
+            };
+            when ('dont_clean') {
+                if (!$opt_args) {
+                    Carp::carp "ignoring dont_clean option without arrayref of subroutine names to keep";
+                    next;
+                }
+                on_scope_end {
+                    for my $method (@$opt_args) {
+                        __PACKAGE__->mark_as_method($method,$caller)
+                    }
+                }
+            };
+            when ('test') {
+                ## no critic ProhibitStringyEval
+                require lib;
+                lib->import('t/lib');
+                # yes, this is ugly, but I couldn't find a better way;
+                eval <<"MAGIC" or die "Couldn't set up testing policy: $@";
 package $caller;
 use Test::Most '-Test::Deep';
 use Test::Deep '!blessed';
 use Data::Printer;
 1;
 MAGIC
-        };
+            };
+            default {
+                Carp::carp "ignoring unknown import option '$_'";
+            };
+        }
     }
 
     # this must come after the on_scope_end call above, otherwise the
@@ -152,11 +188,20 @@ MAGIC
 
 =head2 C<mark_as_method>
 
-  NAP::policy->mark_as_method($subname,$package);
+  BEGIN { NAP::policy->mark_as_method($subname,$package); }
 
 Heavily inspired from L<MooseX::MarkAsMethods>. Mark a (probably
 imported) subroutine as a method, protecting it from
 L<namespace::autoclean>.
+
+B<NOTE>: this has to be called in a C<BEGIN> block, otherwise it won't
+work. L<namespace::autoclean> gets run at the end of compilation, so
+by the time a normal call to this functions gets executed, the
+subrouting will have been cleaned already. A simpler way to get the
+same result is to import C<NAP::policy> with the C<dont_clean>
+option:
+
+  use NAP::policy dont_clean => [$subname];
 
 =cut
 

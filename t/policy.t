@@ -22,6 +22,12 @@ is($outstr,'','no stdout');
 like($errstr,qr{^not ok -},'all modules worked');
 }
 ok(PolicyTest->can('import'),'exporter is preserved');
+ok(PolicyTest->can('carp'),'carp is preserved');
+
+warnings_like { eval "use PolicyTestWarn" }
+    [ { carped => qr{^ignoring dont_clean option without arrayref\b} },
+      { carped => qr{^ignoring unknown import option 'badopt'} },
+  ],'correct warnings on bad options';
 
 use_ok 'PolicyTestClass';
 

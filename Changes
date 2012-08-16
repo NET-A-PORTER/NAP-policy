@@ -2,6 +2,8 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.16    2012-08-16 12:50:19 Europe/London
+
 0.0.15    2012-05-22 18:42:10 Europe/London
 - work with (and exploit features of) Git::Wrapper 0.020
 
