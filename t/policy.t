@@ -9,18 +9,41 @@ use Test::Most;
 
 BEGIN { use_ok 'PolicyTest' }
 
-{
-my ($outstr,$errstr)=('','');
-{
-open my $outfh,'>',\$outstr;
-open my $errfh,'>',\$errstr;
-local *STDOUT=$outfh;
-local *STDERR=$errfh;
-PolicyTest::foo();
+sub capture(&) {
+    my ($code) = @_;
+
+    my ($outstr,$errstr)=('','');
+    {
+        open my $outfh,'>',\$outstr;
+        open my $errfh,'>',\$errstr;
+        local *STDOUT=$outfh;
+        local *STDERR=$errfh;
+        $code->();
+    }
+    return ($outstr,$errstr);
 }
-is($outstr,'','no stdout');
-like($errstr,qr{^not ok -},'all modules worked');
+
+{
+    my ($outstr,$errstr)=capture { PolicyTest::foo() };
+    is($outstr,'','no stdout');
+    like($errstr,qr{^not ok -},'most modules worked');
 }
+
+{
+    eval "require PolicyTestInd;";my $err = $@;
+    like($err,qr{^Indirect call of method "new" on object "MyTest"},'no indirect worked');
+}
+
+{
+    eval "require PolicyTestMD;";my $err = $@;
+    like($err,qr{^Use of multidimensional array emulation},'no multidimensional worked');
+}
+
+{
+    eval "require PolicyTestFH;";my $err = $@;
+    like($err,qr{^Use of bareword filehandle in open},'no bareword::filehandle worked');
+}
+
 ok(PolicyTest->can('import'),'exporter is preserved');
 ok(PolicyTest->can('carp'),'carp is preserved');
 

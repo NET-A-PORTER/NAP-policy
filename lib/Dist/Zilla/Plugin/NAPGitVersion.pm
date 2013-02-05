@@ -33,7 +33,7 @@ sub provide_version {
     else {
         $version = $tag;
     }
-    $self->zilla->version($version);
+    return $version;
 }
 
 __PACKAGE__->meta->make_immutable;

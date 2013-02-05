@@ -2,12 +2,21 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.17    2013-02-05 10:55:19 Europe/London
+- use dzil's version if not provided by us
+- more strictures: "no indirect" "no multidimensional" "no
+  bareword::filehandles"
+
 0.0.16    2012-08-16 12:50:19 Europe/London
+- more "strict-equivalent" packages for Perl::Critic
+- 'dont_clean' option
+- warn when receiving a wrong option
 
 0.0.15    2012-05-22 18:42:10 Europe/London
 - work with (and exploit features of) Git::Wrapper 0.020
 
 0.0.14    2012-04-16 13:44:27 Europe/London
+- fix TT config for specfiles
 
 0.0.13    2012-03-19 10:10:06 Europe/London
 - better exception objects, with & without stack traces, and documented
@@ -18,8 +27,11 @@ Revision history for NAP::policy
   the template to acces other files in its directory
 
 0.0.12    2012-02-16 16:11:11 Europe/London
+- removed spurious dependencies
 
 0.0.11    2012-02-14 17:18:42 Europe/London
+- exception base class
+- 'overloads' option
 
 0.0.10    2012-01-19 17:40:14 Europe/London
 - update Perl::Critic profile after upstream release

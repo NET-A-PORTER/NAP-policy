@@ -89,6 +89,9 @@ use B::Hooks::EndOfScope;
 use Hook::AfterRuntime;
 use File::ShareDir ();
 use Data::OptList;
+use indirect ();
+use multidimensional ();
+use bareword::filehandles ();
 
 sub import {
     my ($class,@opts) = @_;
@@ -101,6 +104,9 @@ sub import {
     true->import();
     TryCatch->import({into=>$caller});
     Sub::Import->import('Carp',{into=>$caller});
+    indirect->unimport(':fatal');
+    multidimensional->unimport();
+    bareword::filehandles->unimport();
 
     @opts = @{
         Data::OptList::mkopt(

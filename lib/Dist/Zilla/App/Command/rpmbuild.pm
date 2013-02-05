@@ -5,6 +5,8 @@ use Template;
 use Moose;
 use NAP::GitVersion;
 use NAP::Rpmbuild;
+use List::MoreUtils 'any';
+use Moose::Autobox 0.09; # ->flatten
 
 # ABSTRACT: build an RPM, NAP-style
 
@@ -26,9 +28,16 @@ has rpm_version => (
 );
 sub _build_rpm_version {
     my ($self) = @_;
-    my ($tag,$distance,$head) = @{NAP::GitVersion->instance->version_info};
-    my $version = $distance ? "${tag}.${distance}.g${head}" : $tag;
-    return $version;
+
+    # are we using our own version provider?
+    if (any { $_->isa('Dist::Zilla::Plugin::NAPGitVersion') }
+            $self->zilla->plugins_with(-VersionProvider)->flatten ) {
+        my ($tag,$distance,$head) = @{NAP::GitVersion->instance->version_info};
+        return $distance ? "${tag}.${distance}.g${head}" : $tag;
+    }
+    else {
+        return $self->zilla->version;
+    }
 }
 
 sub abstract { 'build an RPM, NAP-style' }
