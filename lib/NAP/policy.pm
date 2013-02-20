@@ -46,10 +46,6 @@ will import L<Moose::Role>
 
 will make your class derived from L<NAP::Exception>
 
-=item C<'exporter'>
-
-will prevent C<import> from being auto-cleaned
-
 =item C<'overloads'>
 
 will prevent operator overloads from being auto-cleaned
@@ -73,6 +69,17 @@ will add:
 
 =back
 
+=head1 DEPRECATED FEATURES
+
+=over 4
+
+=item C<'exporter'>
+
+would prevent C<import> from being auto-cleaned; from version 0.0.18
+this is automatic
+
+=back
+
 =cut
 
 use 5.014;
@@ -93,6 +100,14 @@ use indirect ();
 use multidimensional ();
 use bareword::filehandles ();
 
+my %deprecation_notices;
+my $deprecated = sub {
+    my ($feature,$message) = @_;
+    # carp only once per process per feature
+    $deprecation_notices{$feature}++ and return;
+    Carp::carp $message;
+};
+
 sub import {
     my ($class,@opts) = @_;
     my $caller = caller;
@@ -104,7 +119,7 @@ sub import {
     true->import();
     TryCatch->import({into=>$caller});
     Sub::Import->import('Carp',{into=>$caller});
-    indirect->unimport(':fatal');
+    indirect->unimport();
     multidimensional->unimport();
     bareword::filehandles->unimport();
 
@@ -143,9 +158,7 @@ sub import {
                 }
             };
             when ('exporter') {
-                on_scope_end {
-                    __PACKAGE__->mark_as_method('import',$caller);
-                }
+                $deprecated->('feature-exporter',q{no need to specify 'exporter' anymore, it's the default});
             };
             when ('overloads') {
                 on_scope_end {
@@ -181,6 +194,11 @@ MAGIC
             };
         }
     }
+
+    on_scope_end {
+        __PACKAGE__->mark_as_method('import',$caller)
+            if $caller->can('import');
+    };
 
     # this must come after the on_scope_end call above, otherwise the
     # clean happens before the mark_as_method, and 'import' is cleaned

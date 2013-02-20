@@ -2,6 +2,12 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.18    2013-02-20 11:02:39 Europe/London
+- the "import" sub is never cleaned, the "exporter" option is
+  deprecated (will warn once per process)
+- new Perl::Critic policy to require 7-bit clean identifiers
+- 'no indirect' no longer dies, at least until RT #83450 is fixed
+
 0.0.17    2013-02-05 10:55:19 Europe/London
 - use dzil's version if not provided by us
 - more strictures: "no indirect" "no multidimensional" "no

@@ -30,8 +30,9 @@ sub capture(&) {
 }
 
 {
-    eval "require PolicyTestInd;";my $err = $@;
-    like($err,qr{^Indirect call of method "new" on object "MyTest"},'no indirect worked');
+    warnings_like { eval "require PolicyTestInd;" }
+        qr{^Indirect call of method "new" on object "MyTest"},
+            'no indirect worked';
 }
 
 {

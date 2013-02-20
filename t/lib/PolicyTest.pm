@@ -1,5 +1,5 @@
 package PolicyTest;
-use NAP::policy dont_clean=>['carp'],'exporter';
+use NAP::policy dont_clean=>['carp'];
 use Carp;
 
 # testing all pieces of the policy:
