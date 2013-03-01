@@ -50,6 +50,11 @@ will make your class derived from L<NAP::Exception>
 
 will prevent C<import> from being auto-cleaned
 
+=item C<'simple_exception'>
+
+imports L</simple_exception> in your package, will die if the
+package's name does not end in C<::Exception>
+
 =item C<'overloads'>
 
 will prevent operator overloads from being auto-cleaned
@@ -131,6 +136,16 @@ sub import {
                 require Moose::Role;
                 Moose::Role->import({into=>$caller});
             };
+            when ('simple_exception') {
+                require Sub::Install;
+                Carp::croak 'simple_exception should only be imported into a package called *::Exception'
+                      unless $caller =~ m{::Exception$};
+                Sub::Install::install_sub({
+                    code => \&simple_exception,
+                    into => $caller,
+                    as => 'simple_exception',
+                });
+            }
             when ('exception') {
                 require Moose;
                 Moose->import({into=>$caller});
@@ -282,6 +297,117 @@ sub critic_profile {
     return File::ShareDir::dist_file('NAP-policy','perlcritic.conf');
 }
 
+=head2 C<simple_exception>
+
+   package MyApp::Exception;
+   use NAP::policy 'simple_exception';
+   simple_exception('BadExample','something bad happened at %{stack_trace}s');
+   simple_exception('BadValue','the value %{value}s is bad',{
+       attrs => ['value'],
+   });
+   simple_exception('Invalid','the value %{value}s is not valid, should match %{constraint}s ',{
+       extends => 'BadValue',
+       attrs => ['constraint'],
+   });
+   simple_exception('ShortLived','whatever',{
+       stack_trace => 0,
+   });
+
+This functions simplifies creating exception classes in the most
+common cases.
+
+You can only call this function from a package with a name ending in
+C<::Exception>. The reason is that C<simple_exception> will create
+additional classes "under" the calling package's namespace, and we
+want our exception classes to have sensible names.
+
+The simples use is to just create a subclass of L<NAP::Exception> with
+a default message, like the C<BadExample> above. That is equivalent
+to:
+
+  package MyApp::Exception::BadExample {
+   use NAP::policy 'exception';
+   has '+message' => ( default => 'something bad happened at %{stack_trace}s' );
+  }
+
+In most cases you should really set additional attributes to describe
+what caused the exception. You can do that with the C<attrs> option,
+passing an arrayref of attribute names. The C<BadValue> example above
+is equivalent to:
+
+  package MyApp::Exception::BadValue {
+   use NAP::policy 'exception';
+   has '+message' => ( default => 'the value %{value}s is bad' );
+   has value => ( is => 'ro', required => 1 );
+  }
+
+You should structure your exceptions in a hierarchy, using the
+C<extends> options. The C<Invalid> example is equivalent to:
+
+  package MyApp::Exception::Invalid {
+   use NAP::policy 'exception';
+   extends 'MyApp::Exception::BadValue';
+   has '+message' => ( default => 'the value %{value}s is not valid, should match %{constraint}s' );
+   has constraint => ( is => 'ro', required => 1 );
+  }
+
+Finally, in some cases you don't need to capture the entire stack
+trace when you throw an exception (for example, if you know that
+you'll be catching it just a few frames out). You can use the
+C<stack_trace> option to avoid it. The C<ShortLived> example is
+equivalent to:
+
+  package MyApp::Exception::ShortLived {
+   use NAP::policy 'exception';
+   with 'NAP::Exception::Role::StackTrace';
+   has '+message' => ( default => 'whatever' );
+  }
+
+=cut
+
+sub simple_exception {
+    my ($exception_class_local_name,$message_default,$options) = @_;
+    my $caller_package_name = caller;
+    Carp::croak 'simple_exception should only be called from a package called *::Exception'
+          unless $caller_package_name =~ m{::Exception$};
+    Carp::croak 'exception name is required'
+          unless $exception_class_local_name;
+    Carp::croak 'a default message is required'
+          unless $message_default;
+
+    my $exception_class_name = "${caller_package_name}::${exception_class_local_name}";
+
+    my @roles = ($options->{stack_trace}//1) ?
+        () : ( roles => ['NAP::Exception::Role::NoStackTrace'] );
+
+    require Class::Load;require NAP::Exception;
+    my $superclass = $options->{extends} // 'NAP::Exception';
+    unless (Class::Load::is_class_loaded($superclass)) {
+        $superclass = "${caller_package_name}::${superclass}";
+    }
+
+    my @attrs = map {
+        Moose::Meta::Attribute->new(
+            $_ => (
+                is => 'ro',
+                required => 1,
+            ),
+        );
+    } @{$options->{attrs} // []};
+
+    my $exception_meta_class = Moose::Meta::Class->create(
+        $exception_class_name,
+        superclasses =>  [$superclass],
+        @roles,
+        attributes => \@attrs,
+    );
+    $exception_meta_class->add_attribute(
+        '+message' => ( default => $message_default ),
+    );
+
+    return;
+}
+
 =head1 CAVEATS
 
 This module relies on:
@@ -290,7 +416,7 @@ This module relies on:
 
 =item L<B::Hooks::EndOfScope>
 
-(for the C<exporter> case) which does clever things with C<%^H> and
+(to prevent auto-cleaning) which does clever things with C<%^H> and
 C<DESTROY> hooks.
 
 =item L<Hook::AfterRuntime>
