@@ -30,12 +30,6 @@ sub capture(&) {
 }
 
 {
-    warnings_like { eval "require PolicyTestInd;" }
-        qr{^Indirect call of method "new" on object "MyTest"},
-            'no indirect worked';
-}
-
-{
     eval "require PolicyTestMD;";my $err = $@;
     like($err,qr{^Use of multidimensional array emulation},'no multidimensional worked');
 }
@@ -66,6 +60,9 @@ $p = PolicyTestClass2->new({baz=>3});
 is($p->baz(),3,'accessor from second class in file');
 ok(!PolicyTestClass2->can('has'),'namespace::autoclean worked');
 ok(!PolicyTestClass2->meta->is_mutable(),'second class is immutable');
+
+use_ok 'PolicyTestTryTiny';
+is(PolicyTestTryTiny->foo(),'ok','Try::Tiny works');
 
 ok(-f NAP::policy->critic_profile,
    'the Perl::Critic profile is returned');

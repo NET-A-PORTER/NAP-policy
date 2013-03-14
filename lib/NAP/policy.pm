@@ -20,10 +20,12 @@ This module will do the same as:
   use warnings FATAL => 'all';
   use utf8;
   use true;
-  use TryCatch;
+  use TryCatch; # or use Try::Tiny, see below
   use Carp;
   use namespace::autoclean;
   use feature ':5.14';
+  no multidimensional;
+  no bareword::filehandles;
 
 The C<use feature> enables C<say>, C<state>, C<switch> and
 C<unicode_strings>. In the unlikely case you need to deal with binary
@@ -33,6 +35,12 @@ scope.
 In addition, some parameters give additional behaviour:
 
 =over 4
+
+=item C<'tt'>
+
+will use L<Try::Tiny> instead of L<TryCatch>; L<TryCatch> will be
+deprecated and removed in the near future, please start migrating to
+L<Try::Tiny>
 
 =item C<'class'>
 
@@ -86,7 +94,6 @@ use warnings;
 use utf8 ();
 use feature ();
 use true ();
-use TryCatch ();
 use Carp ();
 use Sub::Import ();
 use namespace::autoclean;
@@ -94,7 +101,6 @@ use B::Hooks::EndOfScope;
 use Hook::AfterRuntime;
 use File::ShareDir ();
 use Data::OptList;
-use indirect ();
 use multidimensional ();
 use bareword::filehandles ();
 
@@ -107,11 +113,11 @@ sub import {
     feature->import( ':5.14' );
     utf8->import($caller);
     true->import();
-    TryCatch->import({into=>$caller});
     Sub::Import->import('Carp',{into=>$caller});
-    indirect->unimport();
     multidimensional->unimport();
     bareword::filehandles->unimport();
+
+    my $catcher_package = 'TryCatch';
 
     @opts = @{
         Data::OptList::mkopt(
@@ -125,6 +131,9 @@ sub import {
     for my $opt_spec (@opts) {
         my ($opt,$opt_args) = @$opt_spec;
         given ($opt) {
+            when ('tt') {
+                $catcher_package = 'Try::Tiny';
+            }
             when ('class') {
                 require Moose;
                 Moose->import({into=>$caller});
@@ -195,6 +204,15 @@ MAGIC
                 Carp::carp "ignoring unknown import option '$_'";
             };
         }
+    }
+
+    if ($catcher_package eq 'TryCatch') {
+        require TryCatch;
+        TryCatch->import({into=>$caller});
+    }
+    else {
+        require Try::Tiny;
+        Try::Tiny->export_to_level(1,$caller,'try','catch','finally');
     }
 
     # this must come after the on_scope_end call above, otherwise the

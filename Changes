@@ -2,6 +2,10 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+0.0.22    2013-03-14 16:34:09 Europe/London
+- new option 'tt' to import Try::Tiny instead of TryCatch
+- killed "no indirect", it's too unreliable
+
 0.0.20    2013-03-01 16:34:10 Europe/London
 - "return undef" is no longer criticised (phill & johan convinced me)
 - "simple_exception" function to simplify creating exception classes
