@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.0.0     2013-04-02 17:18:36 Europe/London
+- ignore tags that start with "release-" when deriving version
+
 0.0.22    2013-03-14 16:34:09 Europe/London
 - new option 'tt' to import Try::Tiny instead of TryCatch
 - killed "no indirect", it's too unreliable

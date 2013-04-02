@@ -79,9 +79,13 @@ sub _build_version_info {
 
     my ($distance,$tag)=(0,'0.0');
     for my $c (@commits) {
-        if ($c->[1]) {
-            $tag=$c->[1];
-            last;
+        if (@$c > 1) {
+            shift @$c;
+            my @tags = grep { ! /^release-/ } @$c;
+            if ($tags[0]) {
+                $tag=$tags[0];
+                last;
+            }
         }
         ++$distance;
     }
@@ -91,10 +95,11 @@ sub _build_version_info {
 
 sub _parse_tag {
     my ($refs) = @_;
-    return '' unless defined $refs;
-    my ($tag) = ($refs =~ m{refs/tags/(.*?)[,)]});
-    return '' unless $tag;
-    return $tag;
+    return unless defined $refs;
+    my @tags = map { m{refs/tags/(.*)} }
+        split /\s*,\s*/, 
+            $refs =~ s{^\s*\(|\)\s*$}{}gr;
+    return @tags;
 }
 
 =head1 METHODS
