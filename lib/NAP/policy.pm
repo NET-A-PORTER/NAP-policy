@@ -38,9 +38,11 @@ In addition, some parameters give additional behaviour:
 
 =item C<'tt'>
 
-will use L<Try::Tiny> instead of L<TryCatch>; L<TryCatch> will be
-deprecated and removed in the near future, please start migrating to
-L<Try::Tiny>
+will use L<Try::Tiny> instead of L<TryCatch> and it will import a
+function called C<match_instance_of> (which is L<Smatch::Match>'s
+C<instance_of>); L<TryCatch> will be deprecated and removed in the
+near future, please start migrating to L<Try::Tiny>; see L</Migrating
+to Try::Tiny> for more details
 
 =item C<'class'>
 
@@ -62,6 +64,11 @@ will prevent C<import> from being auto-cleaned
 
 imports L</simple_exception> in your package, will die if the
 package's name does not end in C<::Exception>
+
+=item C<'match'>
+
+will import all of L<Smart::Match>, but each function will be prefixed
+by C<match_> (so you get C<match_all> instead of C<all>)
 
 =item C<'overloads'>
 
@@ -133,6 +140,12 @@ sub import {
         given ($opt) {
             when ('tt') {
                 $catcher_package = 'Try::Tiny';
+                require Smart::Match;
+                Smart::Match->import({into=>$caller},'instance_of' => { -as=>'match_instance_of' });
+            }
+            when ('match') {
+                require Smart::Match;
+                Smart::Match->import({into=>$caller},-all => { -prefix=>'match_' });
             }
             when ('class') {
                 require Moose;
@@ -425,6 +438,37 @@ sub simple_exception {
 
     return;
 }
+
+=head1 Migrating to C<Try::Tiny>
+
+Using L<TryCatch> you'd write:
+
+  try { ... }
+  catch (SomeClass $e) { use($e) }
+  catch (SomethingElse $e) { use($e) }
+  catch ($e) { use($e) }
+
+Using L<Try::Tiny> you'd write:
+
+  try { ... }
+  catch {
+   # here you get the exception in $_
+   when (match_instance_of('SomeClass')) { use($_) }
+   when (match_instance_of('SomethingElse')) { use($_) }
+   default { use($_) }
+  }; # note the semi-colon
+
+On the other hand, if your L<TryCatch> use did I<not> have a
+unqualified C<catch ($e)>, you need to write C<default { die $_ }> to
+re-throw the unhandled exception (yes, you really have to write C<die
+$_>, read the documentation of L<die> to learn the ugly details;
+C<die> without arguments won't do anything useful there).
+
+Also, keep in mind that the blocks used by L<Try::Tiny> are actually
+anonymous subroutines, so they get their own C<@_> (nothing in the
+case of the C<try> block, the exception in the case of the C<catch>
+block), and C<return> will return from the block, not the contanining
+subroutine.
 
 =head1 CAVEATS
 

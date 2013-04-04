@@ -63,6 +63,9 @@ ok(!PolicyTestClass2->meta->is_mutable(),'second class is immutable');
 
 use_ok 'PolicyTestTryTiny';
 is(PolicyTestTryTiny->foo(),'ok','Try::Tiny works');
+throws_ok { PolicyTestTryTiny->foo('bad') }
+    qr{^bad\b},
+    'Try::Tiny re-throw works';
 
 ok(-f NAP::policy->critic_profile,
    'the Perl::Critic profile is returned');

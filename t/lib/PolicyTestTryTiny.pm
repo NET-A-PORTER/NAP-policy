@@ -2,12 +2,21 @@ package PolicyTestTryTiny;
 use NAP::policy 'tt';
 
 sub foo {
+    my ($class,$arg) = @_;
     my $ret='fail';
     try {
-        die "ok\n";
+        if ($arg) {
+            die "bad";
+        }
+        else {
+            die bless {},'MyException';
+        }
     }
     catch {
-        $ret="ok" if $_ eq "ok\n";
+        when (match_instance_of('MyException')) {
+            $ret="ok"
+        }
+        default { die $_ }
     };
     return $ret;
 }
