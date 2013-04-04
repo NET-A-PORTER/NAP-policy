@@ -249,7 +249,7 @@ L<namespace::autoclean>.
 B<NOTE>: this has to be called in a C<BEGIN> block, otherwise it won't
 work. L<namespace::autoclean> gets run at the end of compilation, so
 by the time a normal call to this functions gets executed, the
-subrouting will have been cleaned already. A simpler way to get the
+subroutine will have been cleaned already. A simpler way to get the
 same result is to import C<NAP::policy> with the C<dont_clean>
 option:
 

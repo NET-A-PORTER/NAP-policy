@@ -2,6 +2,10 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.1.1     2013-04-04 17:39:18 Europe/London
+- new Perl::Critic policy, InputOutput::RequireBriefOpenInModules to
+  only complain in modules and ignore programs
+
 1.1.0     2013-04-04 12:09:14 Europe/London
 - 'tt' now also imports 'match_instance_of' to simplify writing
   exception handlers

@@ -78,7 +78,7 @@ re-throwing exceptions.
 
 =attr C<stack_trace>
 
-A stack trace capmuted at object creation via L<Devel::StackTrace>. To
+A stack trace captured at object creation via L<Devel::StackTrace>. To
 avoid memory leaks and to make the trace somewhat legible, we override
 the default parameters for the L<Devel::StackTrace> constructor,
 setting:
