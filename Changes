@@ -2,6 +2,14 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.1.2     2013-05-22 10:13:16 Europe/London
+- Dist::Zilla::Plugin::NAPGitVersion now "cleans" the tag name
+  retrieved from NAP::GitVersion, it should work whatever tag strings you use
+- Dist::Zilla::Plugin::PkgVersionNoCritic will use the full tag, not
+  the "cleaned up" version number
+- new plugin: Dist::Zilla::Plugin::NAPCriticTests uses our critic profile
+- Silence smartmatch warnings on perl >= 5.17.11
+
 1.1.1     2013-04-04 17:39:18 Europe/London
 - new Perl::Critic policy, InputOutput::RequireBriefOpenInModules to
   only complain in modules and ignore programs

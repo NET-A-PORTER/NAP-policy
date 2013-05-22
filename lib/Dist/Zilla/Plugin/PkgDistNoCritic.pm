@@ -1,7 +1,4 @@
 package Dist::Zilla::Plugin::PkgDistNoCritic;
-BEGIN {
-  $Dist::Zilla::Plugin::PkgDistNoCritic::VERSION = '4.200012';
-}
 # ABSTRACT: add a $DIST to your packages, w/o Critic complaining
 use Moose;
 extends 'Dist::Zilla::Plugin::PkgDist';

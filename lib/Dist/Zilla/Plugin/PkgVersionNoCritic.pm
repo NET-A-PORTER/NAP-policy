@@ -1,32 +1,43 @@
 package Dist::Zilla::Plugin::PkgVersionNoCritic;
-BEGIN {
-  $Dist::Zilla::Plugin::PkgVersionNoCritic::VERSION = '0.1';
-}
 # ABSTRACT: add a $VERSION to your packages, w/o Critic complaining
 use Moose;
 extends 'Dist::Zilla::Plugin::PkgVersion';
 
 use PPI;
-use MooseX::Types::Perl qw(LaxVersionStr);
 use namespace::autoclean;
+use Moose::Autobox 0.09; # ->flatten
+use List::MoreUtils 'any';
 
 =head1 Overridden methods
 
 =head2 C<munge_perl>
 
-copied from L<Dist::Zilla::Plugin::PkgVersion>, but the inserted code has
+Copied from L<Dist::Zilla::Plugin::PkgVersion>, but the inserted code has
 C<## no critic (RequireUseStrict, RequireUseWarnings)> at the end of
 each line.
+
+In addition, if the version provider is
+L<Dist::Zilla::Plugin::NAPGitVersion>, use the RPM-like
+C<${tag}.${distance}.g${head}> version string (or just C<$tag> if
+C<$distance> is 0), using whatever tag string we get from
+L<NAP::GitVersion>, instead of the "cleaned up" version we have to set
+in dzil.
 
 =cut
 
 sub munge_perl {
   my ($self, $file) = @_;
 
-  my $version = $self->zilla->version;
-
-  Carp::croak("invalid characters in version")
-    unless LaxVersionStr->check($version);
+  my $version;
+  # are we using our own version provider?
+  if (any { $_->isa('Dist::Zilla::Plugin::NAPGitVersion') }
+          $self->zilla->plugins_with(-VersionProvider)->flatten ) {
+      my ($tag,$distance,$head) = @{NAP::GitVersion->instance->version_info};
+      $version = $distance ? "${tag}.${distance}.g${head}" : $tag;
+  }
+  else {
+      $version = $self->zilla->version;
+  }
 
   my $content = $file->content;
 

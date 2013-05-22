@@ -12,6 +12,7 @@ subtest 'simple message' => sub {
     like($e->as_string,
          qr{\A foo \z}smx,
          'message works');
+    is("$e", $e->as_string, 'string overload works');
 };
 
 subtest 'simple message with undef' => sub {

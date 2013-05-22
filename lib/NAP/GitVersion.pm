@@ -41,15 +41,15 @@ Cached version information extracted from Git. A 3-element array ref:
 
 =over 4
 
-=item 0
+=item 0Z<>
 
 The nearest tag (or C<0.0> if no tag was found)
 
-=item 1
+=item 1Z<>
 
 The distance (0 means the tag is at HEAD)
 
-=item 2
+=item 2Z<>
 
 The abbreviated commit hash for HEAD
 

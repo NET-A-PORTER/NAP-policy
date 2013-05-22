@@ -18,6 +18,7 @@ This module will do the same as:
 
   use strict;
   use warnings FATAL => 'all';
+  no if $] >= 5.017011, warnings => 'experimental::smartmatch';
   use utf8;
   use true;
   use TryCatch; # or use Try::Tiny, see below
@@ -28,9 +29,13 @@ This module will do the same as:
   no bareword::filehandles;
 
 The C<use feature> enables C<say>, C<state>, C<switch> and
-C<unicode_strings>. In the unlikely case you need to deal with binary
-strings, remember to C<use bytes> in the smallest sensible lexical
-scope.
+C<unicode_strings>.
+
+Note that C<unicode_strings> only means that code points between 128
+and 255 have Unicode character semantics reagardless of the internal
+representation. The handling of binary strings (consisting entirely of
+codepoints in the 0-255 range) is not affected. See L<perlunicode/The
+"Unicode Bug"> for details.
 
 In addition, some parameters give additional behaviour:
 
@@ -39,7 +44,7 @@ In addition, some parameters give additional behaviour:
 =item C<'tt'>
 
 will use L<Try::Tiny> instead of L<TryCatch> and it will import a
-function called C<match_instance_of> (which is L<Smatch::Match>'s
+function called C<match_instance_of> (which is L<Smart::Match>'s
 C<instance_of>); L<TryCatch> will be deprecated and removed in the
 near future, please start migrating to L<Try::Tiny>; see L</Migrating
 to Try::Tiny> for more details
@@ -97,7 +102,8 @@ will add:
 
 use 5.014;
 use strict;
-use warnings;
+use warnings FATAL => 'all';
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 use utf8 ();
 use feature ();
 use true ();
@@ -116,7 +122,6 @@ sub import {
     my $caller = caller;
 
     strict->import();
-    warnings->import('FATAL'=>'all');
     feature->import( ':5.14' );
     utf8->import($caller);
     true->import();
@@ -228,6 +233,11 @@ MAGIC
         Try::Tiny->export_to_level(1,$caller,'try','catch','finally');
     }
 
+    # This must come after anything else that might change warning
+    # levels in the caller (e.g. Moose)
+    warnings->import('FATAL'=>'all');
+    warnings->unimport('experimental::smartmatch') if $] >= 5.017011;
+
     # this must come after the on_scope_end call above, otherwise the
     # clean happens before the mark_as_method, and 'import' is cleaned
     # even though we don't want it to be
@@ -290,8 +300,8 @@ sub mark_as_method {
 
   NAP::policy->mark_overloads_as_methods($package);
 
-Heavily inspired from L<MooseX::MarkAsMethods>. Mark an operator
-overload as a method, protecting it from L<namespace::autoclean>.
+Heavily inspired by L<MooseX::MarkAsMethods>. Mark operator overloads
+as methods, protecting them from L<namespace::autoclean>.
 
 =cut
 
@@ -390,7 +400,7 @@ equivalent to:
 
   package MyApp::Exception::ShortLived {
    use NAP::policy 'exception';
-   with 'NAP::Exception::Role::StackTrace';
+   with 'NAP::Exception::Role::NoStackTrace';
    has '+message' => ( default => 'whatever' );
   }
 
