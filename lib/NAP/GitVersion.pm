@@ -3,6 +3,8 @@ package NAP::GitVersion;
 use Moose;
 use MooseX::Singleton;
 use Git::Wrapper 0.020;
+use version ();
+use 5.014;
 use namespace::autoclean;
 
 =head1 SYNOPSIS
@@ -117,5 +119,51 @@ Utility accessors for the three elements of L</version_info>
 sub nearest_tag  { shift->version_info->[0] }
 sub tag_distance { shift->version_info->[1] }
 sub commit_hash  { shift->version_info->[2] }
+
+=head2 C<perl_style_version_string>
+
+Returns C<${tag}_${distance}> (or just C<$tag> if C<$distance> is
+0). If the tag does not look like a Perl version number (acconding to
+L<version/is_lax>), it will only use a likely-looking prefix (or '0.0'
+if there is no sensible prefix).
+
+=cut
+
+sub perl_style_version_string {
+    my ($self) = @_;
+    state $clean_version_rx = qr{
+                                    [0-9]+ (?: [.] [0-9]+ )+
+                            }x;
+
+    my ($tag,$distance,$head) = @{$self->version_info};
+
+    if (not version::is_lax($tag)) {
+        ($tag) = $tag =~ m{\A ($clean_version_rx) }x;
+        $tag //= '0.0';
+    }
+
+    my $version;
+    if ($distance) {
+        $version = "${tag}_${distance}";
+    }
+    else {
+        $version = $tag;
+    }
+    return $version;
+}
+
+=head2 C<rpm_style_version_string>
+
+Returns C<${tag}.${distance}.g${commit}> (or just C<$tag> if
+C<$distance> is 0).
+
+=cut
+
+sub rpm_style_version_string {
+    my ($self) = @_;
+
+    my ($tag,$distance,$head) = @{$self->version_info};
+    return $distance ? "${tag}.${distance}.g${head}" : $tag;
+}
 
 1;

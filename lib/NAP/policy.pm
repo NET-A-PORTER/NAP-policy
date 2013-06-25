@@ -93,7 +93,7 @@ C<'exporter'> is equivalent to C<< dont_clean => ['import'] >>)
 will add:
 
   use lib 't/lib';
-  use Test::Most '!blessed';
+  use Test::Most;
   use Data::Printer;
 
 =back
@@ -116,6 +116,8 @@ use File::ShareDir ();
 use Data::OptList;
 use multidimensional ();
 use bareword::filehandles ();
+use Import::Into;
+use Module::Runtime qw(use_module);
 
 sub import {
     my ($class,@opts) = @_;
@@ -206,17 +208,14 @@ sub import {
                 }
             };
             when ('test') {
-                ## no critic ProhibitStringyEval
-                require lib;
-                lib->import('t/lib');
-                # yes, this is ugly, but I couldn't find a better way;
-                eval <<"MAGIC" or die "Couldn't set up testing policy: $@";
-package $caller;
-use Test::Most '-Test::Deep';
-use Test::Deep '!blessed';
-use Data::Printer;
-1;
-MAGIC
+                foreach (
+                    [qw(lib t/lib)],
+                    [qw(Test::Most)],
+                    [qw(Data::Printer)],
+                ) {
+                    my ($module, @args) = @{$_};
+                    use_module($module)->import::into($caller, @args);
+                }
             };
             default {
                 Carp::carp "ignoring unknown import option '$_'";

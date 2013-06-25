@@ -32,8 +32,7 @@ sub _build_rpm_version {
     # are we using our own version provider?
     if (any { $_->isa('Dist::Zilla::Plugin::NAPGitVersion') }
             $self->zilla->plugins_with(-VersionProvider)->flatten ) {
-        my ($tag,$distance,$head) = @{NAP::GitVersion->instance->version_info};
-        return $distance ? "${tag}.${distance}.g${head}" : $tag;
+        return NAP::GitVersion->instance->rpm_style_version_string;
     }
     else {
         return $self->zilla->version;
