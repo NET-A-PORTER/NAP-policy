@@ -83,7 +83,7 @@ sub _build_version_info {
     for my $c (@commits) {
         if (@$c > 1) {
             shift @$c;
-            my @tags = grep { ! /^release-/ } @$c;
+            my @tags = grep { ! /^(?:release|jenkins)-/ } @$c;
             if ($tags[0]) {
                 $tag=$tags[0];
                 last;
