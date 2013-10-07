@@ -1,5 +1,5 @@
 package NAP::Exception::FakeStackTrace;
-use NAP::policy 'class';
+use NAP::policy 'class','tt';
 
 # ABSTRACT: mock object to fake a stack trace
 

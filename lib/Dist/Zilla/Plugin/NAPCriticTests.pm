@@ -58,7 +58,7 @@ ___[ xt/author/critic.t ]___
 use strict;
 use warnings;
 
-use NAP::policy; # where you can find NAPCriticTests.pm, which spat this out
+use NAP::policy 'tt'; # where you can find NAPCriticTests.pm, which spat this out
 use Test::More;
 use English qw(-no_match_vars);
 

@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.1.5     2013-10-07 17:20:50 Europe/London
+- multi-line logging layout, NAP::Logging::Layout::PatternLayout::MultiLine
+
 1.1.4     2013-08-07 12:25:48 Europe/London
 - also ignore ^jenkins- tags in NAP::GitVersion
 

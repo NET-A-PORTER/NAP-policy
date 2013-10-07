@@ -1,5 +1,5 @@
 package NAP::Exception::Role::NoStackTrace;
-use NAP::policy 'role';
+use NAP::policy 'role','tt';
 use NAP::Exception::FakeStackTrace;
 
 # ABSTRACT: role to have exceptions I<not> capture the stack

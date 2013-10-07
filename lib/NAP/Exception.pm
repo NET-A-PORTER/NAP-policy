@@ -1,5 +1,5 @@
 package NAP::Exception;
-use NAP::policy 'class','overloads';
+use NAP::policy 'class','overloads','tt';
 use NAP::Exception::Formatter;
 
 # ABSTRACT: Exception base class
