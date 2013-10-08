@@ -113,6 +113,12 @@ sub render {
 
     my $result = '';
 
+    my @current_time = $self->{timer}->gettimeofday;
+
+    local $self->{timer}{time_function} = sub {
+        return @current_time;
+    };
+
     while (my ($idx,$msg) = each @messages) {
         # for each line, load the appropriate format (or the default one)
         if ($idx == 0) {
