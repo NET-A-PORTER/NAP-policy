@@ -2,6 +2,15 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.2.0     2013-11-26 10:05:47 Europe/London
+ - remove RequireBriefOpen from the Critic profile
+ - provide a minimal minting profile
+ - add [%REQUIRES_PERL_NAP%] tag for spec files
+ - script to tag new versions
+
+1.1.7     2013-10-22 12:27:44 Europe/London
+- allow %manifest to have specified users in 'rpmbuild'
+
 1.1.6     2013-10-08 12:26:16 Europe/London
 - multi-line logging keeps the same timestamp across lines
 

@@ -11,11 +11,11 @@ use NAP::GitVersion;
   use NAP::Rpmbuild;
 
   NAP::Rpmbuild->new({
-     tarball => $path_to_your_tarball,
-     srcroot => $work_dir,
-     spec_in_file => $your_spec_template,
-     rpm_version => $your_version,
-     rpm_name => $your_package_name,
+     tarball        => $path_to_your_tarball,
+     srcroot        => $work_dir,
+     spec_in_file   => $your_spec_template,
+     rpm_version    => $your_version,
+     rpm_name       => $your_package_name,
   })->build;
 
 =head1 ATTRIBUTES
@@ -227,25 +227,29 @@ mkdir -p $RPM_BUILD_ROOT%sysconfdir
 install -m 0755 -d $RPM_BUILD_ROOT/%NAP_LOGS_DIR
 install -m 0755 -d $RPM_BUILD_ROOT/%NAP_PID_DIR
 EOF
-    },
-    VARIABLES => {
-        SETUP => <<'EOF',
-%setup -q -n %{dist_tarball_dir}
-EOF
         MANIFEST => <<'EOF',
 %define manifest %{_builddir}/%{name}-%{version}-%{release}.manifest
 cd $RPM_BUILD_ROOT
 rm -f %{manifest}
 find . -type d ! -path '*/etc/*' \
-        | sed '1,2d;s,^\.,\%attr(-\,nobody\,nobody) \%dir ,' >> %{manifest}
+        | sed '1,2d;s,^\.,\%attr(-\,[%user%]\,[%group%]) \%dir ,' >> %{manifest}
 find . -type f ! -path '*/etc/*' \
-        | sed 's,^\.,\%attr(-\,nobody\,nobody) ,' >> %{manifest}
+        | sed 's,^\.,\%attr(-\,[%user%]\,[%group%]) ,' >> %{manifest}
 find . -type f -path '*/etc/*' \
-        | sed 's,^\.,\%attr(550\,nobody\,nobody) ,' >> %{manifest}
+        | sed 's,^\.,\%attr(550\,[%user%]\,[%group%]) ,' >> %{manifest}
 find . -type l \
-        | sed 's,^\.,\%attr(-\,nobody\,nobody) ,' >> %{manifest}
+        | sed 's,^\.,\%attr(-\,[%user%]\,[%group%]) ,' >> %{manifest}
 %files -f %{manifest}
-%defattr(-,nobody,nobody)
+%defattr(-,[%user%],[%group%])
+EOF
+    },
+    VARIABLES => {
+        REQUIRES_PERL_NAP => <<'EORPN',
+Requires: perl-nap >= %( perl -e 'printf "%vd", $^V' )
+Requires: perl-nap <  %( perl -MVersion::Next -e 'print (Version::Next::next_version(sprintf "%vd", $^V))' )
+EORPN
+        SETUP => <<'EOF',
+%setup -q -n %{dist_tarball_dir}
 EOF
         DEPS => <<'EOMYF',
 %{__cat} << 'EOF' > %{name}.prov
@@ -297,7 +301,8 @@ sub _create_spec {
     printf $spec_out_fh "%%define dist_tarball_dir %s\n",
         $self->tarball_dirname;
 
-    my $template = Template->new(\%TEMPLATE_CONFIG);
+    my $template = _template();
+
     $template->process($spec_in->stringify,
                        {},
                        $spec_out_fh,
@@ -308,6 +313,24 @@ sub _create_spec {
     close $spec_out_fh;
 
     return $spec_out;
+}
+
+sub _template {
+    my $template = Template->new(\%TEMPLATE_CONFIG);
+    # backward compatibility for [% MANIFEST %] users; defaulting to
+    # nobody/nobody
+    # We just process the MANIFEST *block* with the old default values and
+    # inject it into the config, then reload with the updated config
+    # (there has to be a better way to do this, but for now, we'll go with
+    # something that works - CCW)
+    my $manifest_blob;
+    $template->process(
+        \$TEMPLATE_CONFIG{BLOCKS}{MANIFEST},
+        { user => 'nobody', group => 'nobody' },
+        \$manifest_blob
+    );
+    $TEMPLATE_CONFIG{VARIABLES}{MANIFEST} = $manifest_blob;
+    return Template->new(\%TEMPLATE_CONFIG);
 }
 }
 

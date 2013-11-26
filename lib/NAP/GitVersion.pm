@@ -12,7 +12,7 @@ use namespace::autoclean;
   use NAP::GitVersion;
 
   my ($nearest_tag,$distance,$head_commit) =
-     NAP::GitVersion->instance->version_info();
+     @{NAP::GitVersion->instance->version_info};
 
 =head1 DESCRIPTION
 
@@ -32,6 +32,38 @@ Defaults to the current directory. To set it, call:
 =cut
 
 has git_dir => (
+    is => 'ro',
+    isa => 'Str',
+    default => '.',
+);
+
+=head2 C<exclude_tags_re>
+
+Regex matching tags we want to ignore. Defaults to
+C<^(?:release|jenkins)->.To set it, call:
+
+  NAP::GitVersion->_clear_instance;
+  NAP::GitVersion->initialize(exclude_tags_re => $your_re);
+
+=cut
+
+has exclude_tags_re => (
+    is => 'ro',
+    isa => 'Str',
+    default => '^(?:release|jenkins)-',
+);
+
+=head2 C<limit_tags_re>
+
+Regex matching only the tags we want to use. Defaults to C<.>
+(i.e. every non-empty tag).To set it, call:
+
+  NAP::GitVersion->_clear_instance;
+  NAP::GitVersion->initialize(limit_tags_re => $your_re);
+
+=cut
+
+has limit_tags_re => (
     is => 'ro',
     isa => 'Str',
     default => '.',
@@ -57,6 +89,9 @@ The abbreviated commit hash for HEAD
 
 =back
 
+Tags matching L</exclude_tags_re> or not matching L</limit_tags_re>
+are skipped.
+
 =cut
 
 has version_info => (
@@ -80,10 +115,12 @@ sub _build_version_info {
     my $head = $commits[0]->[0];
 
     my ($distance,$tag)=(0,'0.0');
+    my $exclude_tags_re = $self->exclude_tags_re;$exclude_tags_re=qr{$exclude_tags_re};
+    my $limit_tags_re = $self->limit_tags_re;$limit_tags_re=qr{$limit_tags_re};
     for my $c (@commits) {
         if (@$c > 1) {
             shift @$c;
-            my @tags = grep { ! /^(?:release|jenkins)-/ } @$c;
+            my @tags = grep { ! /$exclude_tags_re/o && /$limit_tags_re/o } @$c;
             if ($tags[0]) {
                 $tag=$tags[0];
                 last;

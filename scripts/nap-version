@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+use NAP::policy 'tt';
+use NAP::GitVersion;
+use Git::Wrapper 0.020;
+use Getopt::Long::Descriptive;
+
+sub get_current_version_tag {
+    NAP::GitVersion->initialize({
+        limit_tags_re => '\Av?[0-9]+(?:\.[0-9]+)+\z',
+    });
+
+    my $nearest_tag = NAP::GitVersion->instance->nearest_tag;
+
+    $nearest_tag =~ s{\Av}{};
+
+    return $nearest_tag;
+}
+
+sub bump_version {
+    my ($current_version, $index) = @_;
+
+    # we store the length to keep the format in the sprintf, later
+    my @components = map { [length($_),0+$_] } split /\./, $current_version;
+
+    if ($index < -@components or $index > $#components) {
+        die sprintf "Index %s is out of range for the current version (%s)\nIt must be a signed integer between 0 and %d, or -1 and %d\n",
+            $index, $current_version, $#components, -@components;
+    }
+
+    my @to_change = splice @components,$index;
+
+    ++$to_change[0]->[1];
+    for my $idx (1 .. $#to_change) { $to_change[$idx]->[1]=0 }
+    push @components, @to_change;
+
+    my $next_version = join '.', map { sprintf '%0*d',@{$_} } @components;
+    $next_version =~ s{\A 0+ (?= [0-9] )}{}x; # remove useless initial zeroes
+
+    return $next_version;
+}
+
+sub tag_version {
+    my ($version) = @_;
+
+    my $git = Git::Wrapper->new('.');
+    $git->tag($version);
+
+    return;
+}
+
+sub help_full_text {
+    print @_;
+    print <<"HELP";
+The index works like a normal Perl array index into the dot-separated
+component of the version.
+
+  Index example: 23.02.3:
+    -1 = 3   (i.e. the last component. Default)
+     0 = 23  (i.e. the first component)
+     1 = 02
+
+Only existing tags looking like dotted-decimal version numbers are
+taken into account (an initial 'v' is ignored).
+
+Components to the right of the incremented one are set to 0.
+
+Usage examples:
+
+    # Display current and next version for the next "semi-major"
+    # version.
+    $0 -cni 2 # -2 would be the same
+
+    # equivalent:
+    $0 --show-current --show-next --index 2
+
+    # Create new major version (e.g. 4.03 -> 5.00 )
+    $0 -ti 0
+
+    # Create new minor version (2013.11.6 -> 2013.11.7), display the
+    # new version
+    $0 -nt
+HELP
+}
+
+my ($opt,$usage) = describe_options(
+    '%c %o',
+    [ 'show-current|c!', 'show the version extracted from existing tags',
+      { default => 0 } ],
+    [ 'show-next|n!', 'show the next version',
+      { default => 0 } ],
+    [ 'tag-next|t!', 'create a tag for the next version',
+      { default => 0 } ],
+    [ 'At least one of the above three must be specified' ],
+    [],
+    [ 'index|i=i', 'Perl index to the component to bump (default: -1)',
+      { default => -1 } ],
+    [],
+    [ 'help|h', 'print the complete usage document' ],
+    {
+        getopt_conf => [qw(posix_default bundling no_ignore_case)],
+    },
+);
+help_full_text($usage) if $opt->help;
+print $usage if not ($opt->show_current or $opt->show_next or $opt->tag_next);
+
+my $current_version = get_current_version_tag;
+say $current_version if $opt->show_current;
+
+my $next_version = bump_version($current_version,$opt->index);
+say $next_version if $opt->show_next;
+
+tag_version if $opt->tag_next;

@@ -73,7 +73,8 @@ package's name does not end in C<::Exception>
 =item C<'match'>
 
 will import all of L<Smart::Match>, but each function will be prefixed
-by C<match_> (so you get C<match_all> instead of C<all>)
+by C<match_> (so you get C<match_all> instead of C<all>); see L</Smart
+Match policy> for details on how to use these
 
 =item C<'overloads'>
 
@@ -478,6 +479,56 @@ anonymous subroutines, so they get their own C<@_> (nothing in the
 case of the C<try> block, the exception in the case of the C<catch>
 block), and C<return> will return from the block, not the contanining
 subroutine.
+
+=head1 Smart Match policy
+
+Smart match can simplify some expressions, but its full power is hard
+to grasp and leads to hard-to-debug problems. Our policy is (subject
+to review in the future):
+
+=over 4
+
+=item *
+
+only use C<~~> with a scalar on the right-hand side, and on the
+right-hand side one of the C<match_*`>> functions exported by C<use
+NAP::policy 'match'> (see L<Smart::Match> for their documentation).
+
+=item *
+
+in the expression for C<when>, only use the C<match_*> functions
+
+=back
+
+This should remove all the ambiguity and guesswork from the
+not-smart-enough match.
+
+When you're working on a piece of code and you see a smart-match or a
+C<given> / C<when>:
+
+=over 4
+
+=item *
+
+if the code already imports C<NAP::policy>, align it to the policy
+above
+
+=item *
+
+otherwise, consider porting it to C<NAP::policy> (but beware of the
+now-fatal warnings! especially about using undef values)
+
+=item *
+
+otherwise, if it's easy, remove the smart-matches and C<given> /
+C<when>
+
+=item *
+
+otherwise, add C<use experimental 'smatchmatch'> to the smallest
+lexical scope of each instance of C<~~> or C<given> / C<when>
+
+=back
 
 =head1 CAVEATS
 

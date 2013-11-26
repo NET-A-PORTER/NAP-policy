@@ -16,7 +16,7 @@ has tarball => (
 );
 sub _build_tarball {
     my ($self) = @_;
-    $self->log('building');
+    $self->log('building tarball');
     my $tarball = file($self->zilla->build_archive);
     $self->log("built to $tarball");
     return $tarball;
