@@ -7,6 +7,7 @@ use List::AllUtils 'all';
 use Time::HiRes 'sleep';
 use Sub::Override;
 use Log::Log4perl;
+use NAP::Logging::JSON;
 use 5.014;
 
 sub check_log {
@@ -147,6 +148,39 @@ EOCONF
     my ($first_time,@times) = map { m{\A \[ (.*?) \] }x } split /\n/,$out;
     ok((all {$_ eq $first_time} @times),
        'all times are the same');
+};
+
+subtest 'JSON logging' => sub {
+    my $log_conf=<<'EOCONF';
+log4perl.appender.test = Log::Log4perl::Appender::String
+log4perl.appender.test.layout = Log::Log4perl::Layout::PatternLayout
+log4perl.appender.test.layout.ConversionPattern = %p: %m%n
+
+log4perl.rootLogger = DEBUG, test
+EOCONF
+
+    Log::Log4perl->init(\$log_conf);
+
+    my $appender = Log::Log4perl->appender_by_name('test');
+    $appender->string('');
+
+    Log::Log4perl->get_logger->debug(logmsg 'simple');
+    Log::Log4perl->get_logger->debug(logmsg 'simple',with=>'data',an=>'other');
+    Log::Log4perl->get_logger->debug(logmsg message=>'simple',with=>'data',an=>'other');
+    # this will output sorted keys
+    Log::Log4perl->get_logger->debug(logmsg {message=>'simple',with=>'data',an=>'other'});
+
+    my $out = $appender->string;
+    is($out,<<EOLOG,'JSON messages ok');
+DEBUG: {"message":"simple"}
+DEBUG: {"message":"simple","with":"data","an":"other"}
+DEBUG: {"message":"simple","with":"data","an":"other"}
+DEBUG: {"an":"other","message":"simple","with":"data"}
+EOLOG
+
+    my $x = logmsg 'something';
+    is($x->{message},'something',
+       'logmsg output can be used as a hashref');
 };
 
 done_testing();

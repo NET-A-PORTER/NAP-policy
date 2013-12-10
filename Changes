@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.2.1     2013-12-10 12:43:07 Europe/London
+ - NAP::Logging::JSON helps logging structured messages
+
 1.2.0     2013-11-26 10:05:47 Europe/London
  - remove RequireBriefOpen from the Critic profile
  - provide a minimal minting profile
@@ -9,121 +12,120 @@ Revision history for NAP::policy
  - script to tag new versions
 
 1.1.7     2013-10-22 12:27:44 Europe/London
-- allow %manifest to have specified users in 'rpmbuild'
+ - allow %manifest to have specified users in 'rpmbuild'
 
 1.1.6     2013-10-08 12:26:16 Europe/London
-- multi-line logging keeps the same timestamp across lines
+ - multi-line logging keeps the same timestamp across lines
 
 1.1.5     2013-10-07 17:20:50 Europe/London
-- multi-line logging layout, NAP::Logging::Layout::PatternLayout::MultiLine
+ - multi-line logging layout, NAP::Logging::Layout::PatternLayout::MultiLine
 
 1.1.4     2013-08-07 12:25:48 Europe/London
-- also ignore ^jenkins- tags in NAP::GitVersion
+ - also ignore ^jenkins- tags in NAP::GitVersion
 
 1.1.3     2013-06-25 12:34:11 Europe/London
-- NAP::GitVersion now has methos to format version info into
-  Perl-style and RPM-style strings
+ - NAP::GitVersion now has methos to format version info into
+   Perl-style and RPM-style strings
 
 1.1.2     2013-05-22 10:13:16 Europe/London
-- Dist::Zilla::Plugin::NAPGitVersion now "cleans" the tag name
-  retrieved from NAP::GitVersion, it should work whatever tag strings you use
-- Dist::Zilla::Plugin::PkgVersionNoCritic will use the full tag, not
-  the "cleaned up" version number
-- new plugin: Dist::Zilla::Plugin::NAPCriticTests uses our critic profile
-- Silence smartmatch warnings on perl >= 5.17.11
+ - Dist::Zilla::Plugin::NAPGitVersion now "cleans" the tag name
+   retrieved from NAP::GitVersion, it should work whatever tag strings you use
+ - Dist::Zilla::Plugin::PkgVersionNoCritic will use the full tag, not
+   the "cleaned up" version number
+ - new plugin: Dist::Zilla::Plugin::NAPCriticTests uses our critic profile
+ - Silence smartmatch warnings on perl >= 5.17.11
 
 1.1.1     2013-04-04 17:39:18 Europe/London
-- new Perl::Critic policy, InputOutput::RequireBriefOpenInModules to
-  only complain in modules and ignore programs
+ - new Perl::Critic policy, InputOutput::RequireBriefOpenInModules to
+   only complain in modules and ignore programs
 
 1.1.0     2013-04-04 12:09:14 Europe/London
-- 'tt' now also imports 'match_instance_of' to simplify writing
-  exception handlers
-- new option 'match' to export the whole of Smatch::Match
+ - 'tt' now also imports 'match_instance_of' to simplify writing
+   exception handlers
+ - new option 'match' to export the whole of Smatch::Match
 
 1.0.0     2013-04-02 17:18:36 Europe/London
-- ignore tags that start with "release-" when deriving version
+ - ignore tags that start with "release-" when deriving version
 
 0.0.22    2013-03-14 16:34:09 Europe/London
-- new option 'tt' to import Try::Tiny instead of TryCatch
-- killed "no indirect", it's too unreliable
+ - new option 'tt' to import Try::Tiny instead of TryCatch
+ - killed "no indirect", it's too unreliable
 
 0.0.20    2013-03-01 16:34:10 Europe/London
-- "return undef" is no longer criticised (phill & johan convinced me)
-- "simple_exception" function to simplify creating exception classes
+ - "return undef" is no longer criticised (phill & johan convinced me)
+ - "simple_exception" function to simplify creating exception classes
 
 0.0.19    2013-02-21 14:06:32 Europe/London
-- "exporter" is again necessary, auto-marking "import" was broken
+ - "exporter" is again necessary, auto-marking "import" was broken
 
 0.0.18    2013-02-20 11:02:39 Europe/London
-- the "import" sub is never cleaned, the "exporter" option is
-  deprecated (will warn once per process)
-- new Perl::Critic policy to require 7-bit clean identifiers
-- 'no indirect' no longer dies, at least until RT #83450 is fixed
+ - the "import" sub is never cleaned, the "exporter" option is
+   deprecated (will warn once per process)
+ - new Perl::Critic policy to require 7-bit clean identifiers
+ - 'no indirect' no longer dies, at least until RT #83450 is fixed
 
 0.0.17    2013-02-05 10:55:19 Europe/London
-- use dzil's version if not provided by us
-- more strictures: "no indirect" "no multidimensional" "no
-  bareword::filehandles"
+ - use dzil's version if not provided by us
+ - more strictures: "no indirect" "no multidimensional" "no
+   bareword::filehandles"
 
 0.0.16    2012-08-16 12:50:19 Europe/London
-- more "strict-equivalent" packages for Perl::Critic
-- 'dont_clean' option
-- warn when receiving a wrong option
+ - more "strict-equivalent" packages for Perl::Critic
+ - 'dont_clean' option
+ - warn when receiving a wrong option
 
 0.0.15    2012-05-22 18:42:10 Europe/London
-- work with (and exploit features of) Git::Wrapper 0.020
+ - work with (and exploit features of) Git::Wrapper 0.020
 
 0.0.14    2012-04-16 13:44:27 Europe/London
-- fix TT config for specfiles
+ - fix TT config for specfiles
 
 0.0.13    2012-03-19 10:10:06 Europe/London
-- better exception objects, with & without stack traces, and documented
-- NAP::RpmBuild now provides a INSTALL block with a 'dirs' array
-  parameter (the old [% INSTALL %] is equivalent to [% INCLUDE INSTALL
-  dirs=['lib','scripts','conf'] %] )
-- NAP::RpmBuild now passes the .spec.in filename to Template, allowing
-  the template to acces other files in its directory
+ - better exception objects, with & without stack traces, and documented
+ - NAP::RpmBuild now provides a INSTALL block with a 'dirs' array
+   parameter (the old [% INSTALL %] is equivalent to [% INCLUDE INSTALL
+   dirs=['lib','scripts','conf'] %] )
+ - NAP::RpmBuild now passes the .spec.in filename to Template, allowing
+   the template to acces other files in its directory
 
 0.0.12    2012-02-16 16:11:11 Europe/London
-- removed spurious dependencies
+ - removed spurious dependencies
 
 0.0.11    2012-02-14 17:18:42 Europe/London
-- exception base class
-- 'overloads' option
+ - exception base class
+ - 'overloads' option
 
 0.0.10    2012-01-19 17:40:14 Europe/London
-- update Perl::Critic profile after upstream release
+ - update Perl::Critic profile after upstream release
 
 0.0.9     2011-11-15 10:07:15 Europe/London
-- bump to perl 5.14
+ - bump to perl 5.14
 
 0.0.8     2011-10-18 09:56:51 Europe/London
-- introductory documentation
-- use /opt instead of /op/xt/deploy as RPM installation prefix
+ - introductory documentation
+ - use /opt instead of /op/xt/deploy as RPM installation prefix
 
 0.0.7     2011-09-28 10:09:38 Europe/London
-- NAPGitVersion inherited from PkgDist, causing that plugin to be
-  executed stealthily. Fixd.
+ - NAPGitVersion inherited from PkgDist, causing that plugin to be
+   executed stealthily. Fixd.
 
 0.0.6     2011-09-21 14:35:14 Europe/London
-- version provider for NAP-style versions
-- rpmbuild now uses our versions
-- building RPMs is factored out, should be usable without dzil
+ - version provider for NAP-style versions
+ - rpmbuild now uses our versions
+ - building RPMs is factored out, should be usable without dzil
 
 0.0.5     2011-09-13 15:56:59 Europe/London
-- "dzil rpmbuild" command
+ - "dzil rpmbuild" command
 
 0.0.4     2011-07-20 18:02:48 Europe/London
-- avoid importing Test::Deep::blessed in 'test' mode
+ - avoid importing Test::Deep::blessed in 'test' mode
 
 0.0.3     2011-07-20 10:28:31 Europe/London
-- add Dist::Zilla::Plugin::Pkg*NoCritic; they will be removed when the
-  "real" dzil plugins do the right thing
+ - add Dist::Zilla::Plugin::Pkg*NoCritic; they will be removed when the
+   "real" dzil plugins do the right thing
 
 0.0.2     2011-07-19 15:21:37 Europe/London
-- add Data::Printer dependency
+ - add Data::Printer dependency
 
 0.0.1     2011-07-19 10:57:38 Europe/London
-
-- Initial release
+ - Initial release
