@@ -5,7 +5,7 @@ use overload
     '%{}' => \&as_hashref,
     fallback => 1;
 use Tie::IxHash;
-use JSON::Any;
+use JSON::XS;
 use Sub::Exporter -setup => {
     exports => [ 'logmsg' ],
     groups => { default => [ 'logmsg' ] },
@@ -124,7 +124,7 @@ Returns a JSON string with the contents of L</data>. Used for overloading.
 
 =cut
 
-my $json = JSON::Any->new(canonical=>1);
+my $json = JSON::XS->new->canonical;
 
 sub to_string {
     return $json->encode($_[0]->data);
