@@ -3,6 +3,8 @@ use NAP::policy 'tt';
 use NAP::GitVersion;
 use Git::Wrapper 0.020;
 use Getopt::Long::Descriptive;
+# PODNAME: nap-version
+# ABSTRACT: script to manage version numbers and tags
 
 sub get_current_version_tag {
     NAP::GitVersion->initialize({
