@@ -111,4 +111,4 @@ say $current_version if $opt->show_current;
 my $next_version = bump_version($current_version,$opt->index);
 say $next_version if $opt->show_next;
 
-tag_version if $opt->tag_next;
+tag_version($next_version) if $opt->tag_next;
