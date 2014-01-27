@@ -109,7 +109,6 @@ use utf8 ();
 use feature ();
 use true ();
 use Carp ();
-use Sub::Import ();
 use namespace::autoclean;
 use B::Hooks::EndOfScope;
 use Hook::AfterRuntime;
@@ -128,7 +127,7 @@ sub import {
     feature->import( ':5.14' );
     utf8->import($caller);
     true->import();
-    Sub::Import->import('Carp',{into=>$caller});
+    Carp->import::into($caller);
     multidimensional->unimport();
     bareword::filehandles->unimport();
 
@@ -230,7 +229,7 @@ sub import {
     }
     else {
         require Try::Tiny;
-        Try::Tiny->export_to_level(1,$caller,'try','catch','finally');
+        Try::Tiny->import::into($caller);
     }
 
     # This must come after anything else that might change warning

@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.2.5     2014-01-27 13:03:38+00:00 Europe/London
+ - fix breakage with Try::Tiny 0.19
+
 1.2.4     2014-01-08 14:11:12 Europe/London
  - fix stupid mistake in nap-version (thanks Johan)
 
