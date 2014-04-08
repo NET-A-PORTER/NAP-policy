@@ -10,6 +10,10 @@ use Moose::Autobox 0.09; # ->flatten
 
 # ABSTRACT: build an RPM, NAP-style
 
+sub opt_spec {
+    [ 'spec-file|f=s' => 'spec template file to use, defaults to the only .spec.in it finds' ],
+}
+
 has tarball => (
     is => 'ro',
     lazy_build => 1,
@@ -44,10 +48,21 @@ sub abstract { 'build an RPM, NAP-style' }
 sub execute {
     my ($self, $opt, $args) = @_;
 
-    my $tarball = $self->tarball;
+    my $spec_in = $opt->spec_file;
+    unless ($spec_in) {
+        my @candidates = grep { m{\.spec\.in$} } $self->zilla->root->children;
+        die "Multiple spec file templates found: @candidates. Please use the --spec-file option to select one\n"
+            if @candidates > 1;
+        die "No *.spec.in file!\n"
+            if @candidates == 0;
+        $spec_in = $candidates[0];
+    }
+    die "Spec template file $spec_in does not exist!\n"
+        unless -e $spec_in;
+    die "The name of spec template file $spec_in should end in .spec.in\n"
+        unless $spec_in =~ m{\.spec\.in$};
 
-    my ($spec_in) = grep { m{\.spec\.in$} } $self->zilla->root->children;
-    die "No *.spec.in file!\n" unless $spec_in;
+    my $tarball = $self->tarball;
 
     my $builder = NAP::Rpmbuild->new({
         logger => sub { $self->log(@_) },

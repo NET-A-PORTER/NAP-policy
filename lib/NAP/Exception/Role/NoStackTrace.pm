@@ -20,4 +20,5 @@ C<undef>
 
 =cut
 
-sub _build_stack_trace { return NAP::Exception::FakeStackTrace->instance }
+requires '_build_stack_trace_class';
+around _build_stack_trace_class => sub { 'NAP::Exception::FakeStackTrace' };

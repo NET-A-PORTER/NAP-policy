@@ -12,15 +12,6 @@ instead.
 
 returns the empty string
 
-=method C<instance>
-
-returns a singleton instance of this class
-
 =cut
 
 sub as_string { return '' }
-
-sub instance {
-    state $instance = __PACKAGE__->new;
-    return $instance;
-}

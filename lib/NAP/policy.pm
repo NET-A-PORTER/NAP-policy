@@ -224,7 +224,7 @@ sub import {
     }
 
     if ($catcher_package eq 'TryCatch') {
-        require TryCatch;
+        require TryCatch; ## no critic Modules::ProhibitEvilModules
         TryCatch->import({into=>$caller});
     }
     else {

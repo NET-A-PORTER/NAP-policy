@@ -77,7 +77,9 @@ Cached version information extracted from Git. A 3-element array ref:
 
 =item 0Z<>
 
-The nearest tag (or C<0.0> if no tag was found)
+The nearest tag (or C<0.0> if no tag was found).
+The shortest matching tag is returned if there are multiple tags on
+the same commit.
 
 =item 1Z<>
 
@@ -120,7 +122,8 @@ sub _build_version_info {
     for my $c (@commits) {
         if (@$c > 1) {
             shift @$c;
-            my @tags = grep { ! /$exclude_tags_re/o && /$limit_tags_re/o } @$c;
+            my @tags = sort { length($a) <=> length($b) }
+                grep { ! /$exclude_tags_re/o && /$limit_tags_re/o } @$c;
             if ($tags[0]) {
                 $tag=$tags[0];
                 last;

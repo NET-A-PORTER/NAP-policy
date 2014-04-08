@@ -239,7 +239,7 @@ find . -type f -path '*/etc/*' \
         | sed 's,^\.,\%attr(550\,[%user%]\,[%group%]) ,' >> %{manifest}
 find . -type l \
         | sed 's,^\.,\%attr(-\,[%user%]\,[%group%]) ,' >> %{manifest}
-%files -f %{manifest}
+%files [% IF package; THEN; package _ ' '; END %]-f %{manifest}
 %defattr(-,[%user%],[%group%])
 EOF
     },
@@ -274,7 +274,6 @@ rm -rf %{buildroot}
 install -m 0755 -d $RPM_BUILD_ROOT/%NAP_BASE_DIR
 rsync -al lib scripts conf $RPM_BUILD_ROOT/%NAP_BASE_DIR
 echo %{VERSION} > ${RPM_BUILD_ROOT}/%{NAP_BASE_DIR}/VERSION
-mkdir -p $RPM_BUILD_ROOT%sysconfdir
 install -m 0755 -d $RPM_BUILD_ROOT/%NAP_LOGS_DIR
 install -m 0755 -d $RPM_BUILD_ROOT/%NAP_PID_DIR
 EOF
