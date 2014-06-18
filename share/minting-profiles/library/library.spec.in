@@ -1,0 +1,43 @@
+{{ # this is a Text::Template file, producing a Template file,
+   # producing an RPM spec file, that includes shell scripts. Yes,
+   # there are at least 4 different variable expansion syntaxes in
+   # here.
+   #
+   # 1) {{ Text::Template, perl code }} 
+   # 2) [% Template, its own syntax %]
+   # 3) %{ RPM spec, variable names }
+   # 4) ${ shell, various }
+}}
+# Defining paths to be exported in PATH as the RPM has a very pristine path
+# whilst installing
+%define PERL_NAP_BIN_PATH /opt/xt/xt-perl/bin
+
+Summary:  {{ $dist->name }} - something something CHANGEME
+Group:    someone someone CHANGEME
+Release:  0%{expand:%%(echo $BUILD_NUMBER)}
+License:  Commercial
+Vendor:   Net-A-Porter
+Packager: Backend Team <backend@net-a-porter.com>
+BuildArch: noarch
+
+Requires: perl-nap
+
+%description
+{{ $dist->name }} - something something CHANGEME
+
+%prep
+[% SETUP %]
+
+[% DEPS %]
+
+%build
+
+touch Makefile.PL
+%PERL_NAP_BIN_PATH/perl Makefile.PL
+make
+
+%install
+
+make pure_install PERL_INSTALL_ROOT=$RPM_BUILD_ROOT
+
+[% MANIFEST %]

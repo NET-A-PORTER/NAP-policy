@@ -40,10 +40,11 @@ In more detail: useful imports
 
   You no longer have to put a ``1;`` at the end of each file!
 
-- ``TryCatch``
+- ``Try::Tiny``
 
-  Yes, it's a bit scary (``Devel::Declare`` anyone?) but it is the
-  cleanest and most powerful way of dealing with exceptions
+  You get ``try`` / ``catch``, and ``match_instance_of``
+  (``instance_of`` from ``Smart::Match``) to make it easy to catch
+  exceptions by class
 
 - ``Carp``
 
@@ -52,12 +53,13 @@ In more detail: useful imports
   your module. Now that you don't have to load ``Carp`` manually, you
   have no excuses.
 
-- ``features '5.14'``
+- ``feature ':5.18'``
 
   You get ``given/when``, ``say``, lexical character semantic for
   string operators and regexes, and the smart-match operator. Please
-  don't use the smart-match, it's too complicated to make sense of
-  (and may well be on its way out starting from 5.16).
+  only use smart-match with the help of ``Smart::Match``, see
+  below. You also get the ``__SUB__`` token and the ``fc`` (fold case)
+  function.
 
 - ``namespace::autoclean``
 
@@ -74,8 +76,24 @@ some additional goodies:
 ``'role'``
  - ``Moose::Role``
 
+``'match'``
+ - all the functions from ``Smatch::Match``, imported with the
+   ``match_`` prefix
+
+``'exception'``
+ - ``Moose``
+ - your package is a subclass of ``NAP::Exception``
+
+``'simple_exception'``
+ - helper function to create exception classes
+
+``'overloads'`` and ``'dont_clean'``
+ - prevent ``namespace::autoclean`` from removing overloaded operator
+   and/or additional functions
+
 ``'exporter'``
- - your ``import`` function is protected from ``namespace::autoclean``
+ - same as ``dont_clean=>['import']``.
+
    You can get a similar effect for additional imported functions you
    may want to stay visible in your namespace by calling
    ``NAP::policy->mark_as_method($the_function_name)``
@@ -91,8 +109,8 @@ Other goodies: ``Perl::Critic``
 
 ``NAP::policy::critic_profile`` returns the full path to a
 ``Perl::Critic`` profile that we should use for all our code. It's the
-result of a merge of the `XT` and `Fulcrum` critic profiles, with some
-changes to support the use of ``NAP::policy`` itself. For example,
+result of a merge of our various critic profiles, with some changes to
+support the use of ``NAP::policy`` itself. For example,
 ``RequireUseStrict`` and ``RequireUseWarnings`` now know that
 ``NAP::policy`` provides those, and ``RequireEndWithOne`` has been
 generalised to ``RequireTrue`` which knows about ``use true`` and
@@ -101,9 +119,9 @@ generalised to ``RequireTrue`` which knows about ``use true`` and
 Other goodies: ``Dist::Zilla`` support
 --------------------------------------
 
-We are using ``Dist::Zilla`` for new distributions (``Net::ActiveMQ``,
-``NAP::policy`` itself), so it seemed a good idea to provide some help
-to make it work more "the NAP way".
+We are using ``Dist::Zilla`` for new distributions
+(``NAP::Messaging``, ``NAP::policy`` itself), so it seemed a good idea
+to provide some help to make it work more "the NAP way".
 
 Inside the ``NAP::policy`` distribution you get some ``Dist::Zilla``
 plugins:
@@ -113,12 +131,14 @@ plugins:
   with ``Perl::Critic``, which would otherwise complain about the
   inserted lines of code being before ``use strict``
 - ``NAPGitVersion`` is a ``VersionProvider`` that uses the same
-  algorithm we use in `XT` and `Fulcrum` to get a usable version
-  number.
+  algorithm we use in our applications to get a usable version number.
 
 We also provide a ``Dist::Zilla`` command: ``rpmbuild``, that will
 pack your distribution using the normal ``Dist::Zilla`` process, then
 make an RPM out of it using a templated spec-file.
+
+You also get two scripts, ``nap-new-lib`` and ``nap-new-app``, that
+create a distribution skeleton using a custom minting profile.
 
 Helper modules: versions and RPM
 --------------------------------
@@ -133,6 +153,8 @@ is a singleton object with only one useful method:
 
 These are used in both ``NAPGitVersion`` and in the RPM process to
 build version numbers.
+
+You can use the ``nap-version`` script to manage version tags.
 
 ``NAP::Rpmbuild`` implements all the RPM building logic. You pass it a
 tarball, a spec-file template path, a name and a version, and it will
@@ -154,19 +176,18 @@ In your ``*.spec.in`` template file, you should use:
 - ``[% SETUP %]`` where you would usually write ``%setup``, to support
   having tarballs with names different from the directory they expand
   to
-- ``[% MANIFEST %]`` to automatically build the RPM manifest with
-  sensible file ownership and permissions
+- ``[% INCLUDE MANIFEST user='fulcrum' group='fulcrum' %]`` to
+  automatically build the RPM manifest with sensible file ownership
+  and permissions
 - ``[% DEPS %]`` to get the right dependencies on ``perl-nap`` instead
   of the system ``perl``
 - ``[% INSTALL %]`` inside your ``%install`` section, to install your
   application to the ``deploydir`` you declared at the beginning
+- ``[% INCLUDE INSTALL dirs=['lib','scripts','conf'] %]`` if you want
+  to specify which directories to install
 
-An example ``.spec.in`` for a module can be seen in the
-`NAP-DocIntegrator repository
-<http://gitosis.net-a-porter.com/cgit/doc-integrator/tree/docint.spec.in>`_,
-and an example for an application can be seen in the `NAP-PCollector
-repository
-<http://gitosis.net-a-porter.com/cgit/product-collector/tree/pcoll.spec.in>`_
+You can use the ``*.spec.in`` file created from the minting profile as
+a starting point: in most cases it will just work.
 
 Why should I use ``NAP::policy``?
 =================================
@@ -187,11 +208,6 @@ clear) will change ``NAP::policy`` and fix whatever broke.
 
 Future ideas
 ------------
-
-``use NAP::policy 'exceptions'`` could import ``Throwable::Error`` or
-some similar class.
-
-We could add a ``Dist::Zilla`` minting profile.
 
 The RPM creation needs more love.
 

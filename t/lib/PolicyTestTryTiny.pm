@@ -1,5 +1,5 @@
 package PolicyTestTryTiny;
-use NAP::policy 'tt';
+use NAP::policy;
 
 sub foo {
     my ($class,$arg) = @_;

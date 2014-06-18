@@ -9,14 +9,14 @@ use Sub::Exporter -setup => {
 };
 
 sub foo {
-    try { # TryCatch
+    try { # Try::Tiny
         my $a;
         say $a; # 5.12 & warnings FATAL
         carp "ok"; # Carp
     }
-    catch ($e) {
-        carp "not ok - $e";
-    }
+    catch {
+        carp "not ok - $_";
+    };
 }
 
 # true

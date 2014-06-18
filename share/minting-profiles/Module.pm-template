@@ -1,0 +1,13 @@
+package {{$name}};
+use NAP::policy 'class';
+
+# ABSTRACT: something something CHANGEME
+
+=head1 SYNOPSIS
+
+  use {{$name}};
+
+=head1 DESCRIPTION
+
+=cut
+

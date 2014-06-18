@@ -23,7 +23,7 @@ start.
 =method C<profile_dir>
 
 Returns the subdir with the same name as the profile name (C<-p>
-option to C<dzil new>, defaults to C<default>) under the shared
+option to C<dzil new>, defaults to C<application>) under the shared
 distribution directory. Dies if such subdir does not exist.
 
 =cut
@@ -33,7 +33,10 @@ distribution directory. Dies if such subdir does not exist.
 sub profile_dir {
   my ($self, $profile_name) = @_;
 
-  $profile_name ||= 'default';
+  $profile_name ||= 'application';
+  if ($profile_name eq 'default') {
+      $profile_name = 'application';
+  }
 
   if (!$ENV{NAP_OVERRIDE_PROFILE}) {
       my $profile_dir = dir(File::ShareDir::dist_dir('NAP-policy'))

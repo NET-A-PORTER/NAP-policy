@@ -1,0 +1,5 @@
+#!/bin/bash
+# PODNAME: nap-new-lib
+# ABSTRACT: mint a new library
+dzil new -P NAP -p library "$@"
+exit $?

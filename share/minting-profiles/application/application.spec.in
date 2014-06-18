@@ -1,0 +1,84 @@
+{{ # this is a Text::Template file, producing a Template file,
+   # producing an RPM spec file, that includes shell scripts. Yes,
+   # there are at least 4 different variable expansion syntaxes in
+   # here.
+   #
+   # 1) {{ Text::Template, perl code }} 
+   # 2) [% Template, its own syntax %]
+   # 3) %{ RPM spec, variable names }
+   # 4) ${ shell, various }
+}}
+[% application_shortname = '{{ $dist->name =~ s{^NAP-}{}r }}' %]
+[% INCLUDE NAPDIRS deploydir=application_shortname.lower sysdir=application_shortname.lower %]
+
+# Defining paths to be exported in PATH as the RPM has a very pristine path
+# whilst installing
+%define PERL_NAP_BIN_PATH /opt/xt/xt-perl/bin
+%define [% application_shortname %]_USER [% application_shortname.lower %]
+%define [% application_shortname %]_GROUP [% application_shortname.lower %]
+
+Summary:  {{ $dist->name }} - something something CHANGEME
+Group:    someone someone CHANGEME
+Release:  0%{expand:%%(echo $BUILD_NUMBER)}
+License:  Commercial
+Vendor:   Net-A-Porter
+Packager: Backend Team <backend@net-a-porter.com>
+BuildArch: noarch
+
+Requires: perl-nap
+
+%description
+{{ $dist->name }} - something something CHANGEME
+
+%prep
+[% SETUP %]
+
+[% DEPS %]
+
+%build
+
+%install
+
+[% INCLUDE INSTALL dirs=['conf','lib','script'] %]
+
+install --directory ${RPM_BUILD_ROOT}/etc/[% application_shortname.lower %]
+# install your config here
+
+install --directory ${RPM_BUILD_ROOT}/etc/init.d
+# install your init script(s) here
+
+[% INCLUDE MANIFEST user=application_shortname.lower, group=application_shortname.lower %]
+
+# Before we install
+%pre
+
+# Create system group
+getent group %{[% application_shortname %]_GROUP} > /dev/null || groupadd -r %{[% application_shortname %]_GROUP} > /dev/null
+
+# Create system users (no shell)
+getent passwd %{[% application_shortname %]_USER} > /dev/null  \
+    || useradd -g %{[% application_shortname %]_GROUP} -r -d /home/%{[% application_shortname %]_USER} -m -s /sbin/nologin %{[% application_shortname %]_USER} > /dev/null
+
+# Ensure the user is in the group
+usermod -a -G %{[% application_shortname %]_GROUP} %{[% application_shortname %]_USER}
+
+# Assert the existence of the users. Die horribly if absent
+getent passwd %{[% application_shortname %]_USER} > /dev/null
+if [ $? -ne 0 ]; then
+    echo "Absent user: %{[% application_shortname %]_USER} ...Aborting...";
+    exit 1;
+fi
+
+%preun
+
+# from: http://www.ibm.com/developerworks/library/l-rpm2/
+if [ "$1" = "0" ]; then
+    # Package Removal - stop services
+    # CHANGEME - fix the init script(s) name(s)
+    /etc/init.d/[% application_shortname.lower %] stop
+elif [ "$1" = "1" ]; then
+    # Package Upgrade
+    true;
+fi
+
+%post

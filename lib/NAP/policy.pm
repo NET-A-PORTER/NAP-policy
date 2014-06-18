@@ -18,13 +18,14 @@ This module will do the same as:
 
   use strict;
   use warnings FATAL => 'all';
-  no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+  no warnings 'experimental::smartmatch';
   use utf8;
   use true;
-  use TryCatch; # or use Try::Tiny, see below
+  use Try::Tiny;
+  use Smart::Match instance_of => { -as => 'match_instance_of' };
   use Carp;
   use namespace::autoclean;
-  use feature ':5.14';
+  use feature ':5.18';
   no multidimensional;
   no bareword::filehandles;
 
@@ -40,14 +41,6 @@ codepoints in the 0-255 range) is not affected. See L<perlunicode/The
 In addition, some parameters give additional behaviour:
 
 =over 4
-
-=item C<'tt'>
-
-will use L<Try::Tiny> instead of L<TryCatch> and it will import a
-function called C<match_instance_of> (which is L<Smart::Match>'s
-C<instance_of>); L<TryCatch> will be deprecated and removed in the
-near future, please start migrating to L<Try::Tiny>; see L</Migrating
-to Try::Tiny> for more details
 
 =item C<'class'>
 
@@ -97,18 +90,24 @@ will add:
   use Test::Most;
   use Data::Printer;
 
+=item C<'tt'>
+
+historical, used to select L<Try::Tiny> instead of L<TryCatch>, but we
+no longer support L<TryCatch>, so this option does nothing
+
 =back
 
 =cut
 
-use 5.014;
+use 5.018;
 use strict;
 use warnings FATAL => 'all';
-no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+no warnings 'experimental::smartmatch';
 use utf8 ();
 use feature ();
 use true ();
 use Carp ();
+use Try::Tiny ();
 use namespace::autoclean;
 use B::Hooks::EndOfScope;
 use Hook::AfterRuntime;
@@ -118,20 +117,21 @@ use multidimensional ();
 use bareword::filehandles ();
 use Import::Into;
 use Module::Runtime qw(use_module);
+use Smart::Match ();
 
 sub import {
     my ($class,@opts) = @_;
     my $caller = caller;
 
     strict->import();
-    feature->import( ':5.14' );
+    feature->import( ':5.18' );
     utf8->import($caller);
     true->import();
     Carp->import::into($caller);
     multidimensional->unimport();
     bareword::filehandles->unimport();
-
-    my $catcher_package = 'TryCatch';
+    Try::Tiny->import::into($caller);
+    Smart::Match->import({into=>$caller},'instance_of' => { -as=>'match_instance_of' });
 
     @opts = @{
         Data::OptList::mkopt(
@@ -146,9 +146,6 @@ sub import {
         my ($opt,$opt_args) = @$opt_spec;
         given ($opt) {
             when ('tt') {
-                $catcher_package = 'Try::Tiny';
-                require Smart::Match;
-                Smart::Match->import({into=>$caller},'instance_of' => { -as=>'match_instance_of' });
             }
             when ('match') {
                 require Smart::Match;
@@ -223,19 +220,10 @@ sub import {
         }
     }
 
-    if ($catcher_package eq 'TryCatch') {
-        require TryCatch; ## no critic Modules::ProhibitEvilModules
-        TryCatch->import({into=>$caller});
-    }
-    else {
-        require Try::Tiny;
-        Try::Tiny->import::into($caller);
-    }
-
     # This must come after anything else that might change warning
     # levels in the caller (e.g. Moose)
     warnings->import('FATAL'=>'all');
-    warnings->unimport('experimental::smartmatch') if $] >= 5.017011;
+    warnings->unimport('experimental::smartmatch');
 
     # this must come after the on_scope_end call above, otherwise the
     # clean happens before the mark_as_method, and 'import' is cleaned
@@ -546,11 +534,6 @@ C<DESTROY> hooks.
 C<BEGIN> time (e.g. via C<use>) at package scope; why you would C<use
 NAP::policy 'class'> in any other place than the top of the package is
 beyond me.
-
-=item L<Devel::Declare>
-
-(via L<TryCatch>) which is deep scary voodoo, and will spit out
-horrible error messages if you get things wrong.
 
 =back
 

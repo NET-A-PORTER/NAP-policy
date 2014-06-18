@@ -1,0 +1,5 @@
+#!/bin/bash
+# PODNAME: nap-new-app
+# ABSTRACT: mint a new application
+dzil new -P NAP -p application "$@"
+exit $?
