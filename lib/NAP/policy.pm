@@ -71,7 +71,8 @@ Match policy> for details on how to use these
 
 =item C<'overloads'>
 
-will prevent operator overloads from being auto-cleaned
+no-op; used to prevent prevent operator overloads from being
+auto-cleaned, but that is done automatically now.
 
 =item C<'dont_clean'>
 
@@ -108,8 +109,7 @@ use feature ();
 use true ();
 use Carp ();
 use Try::Tiny ();
-use namespace::autoclean;
-use B::Hooks::EndOfScope;
+use namespace::autoclean 0.17;
 use Hook::AfterRuntime;
 use File::ShareDir ();
 use Data::OptList;
@@ -142,6 +142,7 @@ sub import {
         )
       };
 
+    my @no_clean;
     for my $opt_spec (@opts) {
         my ($opt,$opt_args) = @$opt_spec;
         given ($opt) {
@@ -184,25 +185,18 @@ sub import {
                 }
             };
             when ('exporter') {
-                on_scope_end {
-                    __PACKAGE__->mark_as_method('import',$caller);
-                }
+                push @no_clean, 'import';
             };
             when ('overloads') {
-                on_scope_end {
-                    __PACKAGE__->mark_overloads_as_methods($caller);
-                }
+                # nothing to do, namespace::autoclean since 0.16
+                # leaves overloads in place
             };
             when ('dont_clean') {
                 if (!$opt_args) {
                     Carp::carp "ignoring dont_clean option without arrayref of subroutine names to keep";
                     next;
                 }
-                on_scope_end {
-                    for my $method (@$opt_args) {
-                        __PACKAGE__->mark_as_method($method,$caller)
-                    }
-                }
+                push @no_clean, @$opt_args;
             };
             when ('test') {
                 foreach (
@@ -225,11 +219,9 @@ sub import {
     warnings->import('FATAL'=>'all');
     warnings->unimport('experimental::smartmatch');
 
-    # this must come after the on_scope_end call above, otherwise the
-    # clean happens before the mark_as_method, and 'import' is cleaned
-    # even though we don't want it to be
     namespace::autoclean->import(
         -cleanee => $caller,
+        -except => \@no_clean,
     );
 }
 
@@ -238,6 +230,8 @@ sub import {
 =head2 C<mark_as_method>
 
   BEGIN { NAP::policy->mark_as_method($subname,$package); }
+
+B<Deprecated>, use the C<dont_clean> option instead.
 
 Heavily inspired from L<MooseX::MarkAsMethods>. Mark a (probably
 imported) subroutine as a method, protecting it from
@@ -259,6 +253,7 @@ sub mark_as_method {
 
     $class //= caller;
 
+    require Class::MOP;
     my $meta=Class::MOP::Class->initialize($class);
     return if $meta->has_method($method_name);
     my $code = $meta->get_package_symbol({
@@ -287,23 +282,11 @@ sub mark_as_method {
 
   NAP::policy->mark_overloads_as_methods($package);
 
-Heavily inspired by L<MooseX::MarkAsMethods>. Mark operator overloads
-as methods, protecting them from L<namespace::autoclean>.
+B<Deprecated>, L<namespace::autoclean> now leaves overloads in place.
 
 =cut
 
-sub mark_overloads_as_methods {
-    my ($self,$class) = @_;
-
-    $class //= caller;
-
-    my $meta=Class::MOP::Class->initialize($class);
-    my @overloads = grep { /^\(/ }
-        keys %{$meta->get_all_package_symbols('CODE')};
-    $self->mark_as_method($_,$class) for @overloads;
-
-    return;
-}
+sub mark_overloads_as_methods { }
 
 =head2 C<critic_profile>
 
@@ -519,14 +502,7 @@ lexical scope of each instance of C<~~> or C<given> / C<when>
 
 =head1 CAVEATS
 
-This module relies on:
-
 =over 4
-
-=item L<B::Hooks::EndOfScope>
-
-(to prevent auto-cleaning) which does clever things with C<%^H> and
-C<DESTROY> hooks.
 
 =item L<Hook::AfterRuntime>
 

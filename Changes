@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.3.1     2014-06-19 12:28:07+01:00 Europe/London
+ - exploin newer namespace::autoclean, simplifying dont_clean logic
+
 1.3.0     2014-06-18 15:58:10+01:00 Europe/London
  - Try::Tiny is now the default, TryCatch is never imported
  - minting profiles! use nap-new-lib and nap-new-app to get a good
