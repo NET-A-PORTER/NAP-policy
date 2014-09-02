@@ -104,7 +104,6 @@ has version_info => (
 
 sub _build_version_info {
     my ($self) = @_;
-    return $ENV{V} if exists $ENV{V};
 
     my $git  = Git::Wrapper->new($self->git_dir);
     my @commits =
@@ -115,6 +114,8 @@ sub _build_version_info {
                 pretty => 'format:%h%x00%d%x00',
             },'HEAD');
     my $head = $commits[0]->[0];
+
+    return [$ENV{V},0,$head] if exists $ENV{V};
 
     my ($distance,$tag)=(0,'0.0');
     my $exclude_tags_re = $self->exclude_tags_re;$exclude_tags_re=qr{$exclude_tags_re};

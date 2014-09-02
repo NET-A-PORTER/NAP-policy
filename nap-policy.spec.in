@@ -1,0 +1,33 @@
+# Defining paths to be exported in PATH as the RPM has a very pristine path
+# whilst installing
+%define PERL_NAP_BIN_PATH /opt/xt/xt-perl/bin
+
+Summary:  NAP-policy - Common policy for NAP modules
+Group:    Architecture
+Release:  0%{expand:%%(echo $BUILD_NUMBER)}
+License:  Commercial
+Vendor:   Net-A-Porter
+Packager: Backend Team <backend@net-a-porter.com>
+BuildArch: noarch
+
+Requires: perl-nap
+
+%description
+NAP-policy - Common policy for NAP modules
+
+%prep
+[% SETUP %]
+
+[% DEPS %]
+
+%build
+
+touch Makefile.PL
+%PERL_NAP_BIN_PATH/perl Makefile.PL
+make
+
+%install
+
+make pure_install PERL_INSTALL_ROOT=$RPM_BUILD_ROOT
+
+[% MANIFEST %]

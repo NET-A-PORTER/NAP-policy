@@ -91,6 +91,8 @@ will add:
   use Test::Most;
   use Data::Printer;
 
+in addition, all output streams are filtered via L<PerlIO::via::SafeEscape>
+
 =item C<'tt'>
 
 historical, used to select L<Try::Tiny> instead of L<TryCatch>, but we
@@ -206,6 +208,12 @@ sub import {
                 ) {
                     my ($module, @args) = @{$_};
                     use_module($module)->import::into($caller, @args);
+                }
+                my $builder = Test::Builder->new;
+                require PerlIO::via::SafeEscape;
+                for my $stream (qw(output failure_output todo_output)) {
+                    # the :raw makes sure we don't apply SafeEscape twice!
+                    binmode $builder->$stream, ':raw:via(SafeEscape)';
                 }
             };
             default {
@@ -501,6 +509,8 @@ lexical scope of each instance of C<~~> or C<given> / C<when>
 =back
 
 =head1 CAVEATS
+
+This module relies on:
 
 =over 4
 
