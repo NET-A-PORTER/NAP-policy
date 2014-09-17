@@ -2,6 +2,11 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.4.1     2014-09-17 13:43:22+01:00 Europe/London
+ - remove the filtering of test streams via ::SafeEscape, *something*
+   in the PerlIO::via system is messing with buffering and we get "ok"
+   mixed in with notes without newlines inbetween :(
+
 1.4.0     2014-09-02 16:42:36+01:00 Europe/London
  - new module PerlIO::via::SafeEscape filters unprintable characters
  - filter all test output streams via ::SafeEscape, should help with

@@ -211,9 +211,10 @@ sub import {
                 }
                 my $builder = Test::Builder->new;
                 require PerlIO::via::SafeEscape;
-                for my $stream (qw(output failure_output todo_output)) {
-                    # the :raw makes sure we don't apply SafeEscape twice!
-                    binmode $builder->$stream, ':raw:via(SafeEscape)';
+                for my $stream_name (qw(output failure_output todo_output)) {
+                    my $stream = $builder->$stream_name;
+                    binmode $stream, ':encoding(utf-8)';
+                    _autoflush($stream);
                 }
             };
             default {
@@ -231,6 +232,15 @@ sub import {
         -cleanee => $caller,
         -except => \@no_clean,
     );
+}
+
+sub _autoflush {
+    my($fh) = shift;
+    my $old_fh = select $fh;
+    $| = 1;
+    select $old_fh;
+
+    return;
 }
 
 =head1 Additional methods
