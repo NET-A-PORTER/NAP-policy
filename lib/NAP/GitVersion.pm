@@ -2,6 +2,7 @@ package NAP::GitVersion;
 # ABSTRACT: function to get $nearest_tag-$distance-g$hash
 use Moose;
 use MooseX::Singleton;
+use Moose::Util::TypeConstraints 'enum';
 use Git::Wrapper 0.020;
 use version ();
 use 5.014;
@@ -69,6 +70,24 @@ has limit_tags_re => (
     default => '.',
 );
 
+=head2 C<order>
+
+What order to consider commits in, to get the "closest" tag. Defaults
+to C<topo>, can be set to C<date>. See the C<git-log> man page for the
+precise meaning of C<--topo-order> and C<--date-order>. To set this
+attribute, call:
+
+  NAP::GitVersion->_clear_instance;
+  NAP::GitVersion->initialize(order => 'date');
+
+=cut
+
+has order => (
+    is => 'ro',
+    isa => enum(['topo','date']),
+    default => 'topo',
+);
+
 =head2 C<version_info>
 
 Cached version information extracted from Git. A 3-element array ref:
@@ -106,10 +125,11 @@ sub _build_version_info {
     my ($self) = @_;
 
     my $git  = Git::Wrapper->new($self->git_dir);
+    my $order = $self->order;
     my @commits =
         map { m{^([a-f0-9]+) \x00 (.*?) \x00 }ix ? [ $1, _parse_tag($2) ] : () }
             $git->RUN(log => {
-                topo_order => 1,
+                "${order}_order" => 1,
                 decorate => 'full',
                 pretty => 'format:%h%x00%d%x00',
             },'HEAD');

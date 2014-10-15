@@ -213,7 +213,8 @@ sub import {
                 require PerlIO::via::SafeEscape;
                 for my $stream_name (qw(output failure_output todo_output)) {
                     my $stream = $builder->$stream_name;
-                    binmode $stream, ':encoding(utf-8)';
+                    # the :raw makes sure we don't apply SafeEscape twice
+                    binmode $stream, ':raw:via(SafeEscape)';
                     _autoflush($stream);
                 }
             };

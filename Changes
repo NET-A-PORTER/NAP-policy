@@ -2,6 +2,13 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.5.0     2014-10-15 11:23:12+01:00 Europe/London
+ - put the filtering back, this time with proper flushing
+ - you can now request date-order (in alternative to the default
+   topo-order) for NAP::GitVersion, so that the *chronologically*
+   nearest tag is chosen, instead of the *topologically* nearest
+   one. See git-log for details.
+
 1.4.1     2014-09-17 13:43:22+01:00 Europe/London
  - remove the filtering of test streams via ::SafeEscape, *something*
    in the PerlIO::via system is messing with buffering and we get "ok"

@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use 5.018;
 use Encode;
-use Devel::Peek;
 
 # ABSTRACT: IO layer to escape unprintable characters
 
@@ -26,6 +25,7 @@ bytes, you'll probably get strange outputs.
 =for Pod::Coverage
 PUSHED
 UTF8
+FLUSH
 FILL
 WRITE
 
@@ -42,16 +42,24 @@ sub UTF8 { 1 }
 # a weak attempt at working for input
 sub FILL { return readline($_[1]) }
 
+# without this, autoflush is not propagated down!
+sub FLUSH { return $_[1]->flush }
+
 # the actual output function
 sub WRITE {
     my (undef,$buf,$fh) = @_;
+
+    # we should return the number of bytes written, so let's save it
+    my $ret = length($buf);
+
     # $buf is utf-8 encoded bytes, let's get the characters
     my $char_buf = decode('utf-8',$buf);
     # not printable, not space? escape it!
     $char_buf =~ s{([^[:print:][:space:]])}{sprintf '\x{%x}',ord($1)}ge;
     # we have to pass bytes to the next layer
     $buf = encode('utf-8',$char_buf);
-    $fh->print($buf);
+
+    return ( $fh->print($buf) ? $ret : -1 );
 }
 
 1;
