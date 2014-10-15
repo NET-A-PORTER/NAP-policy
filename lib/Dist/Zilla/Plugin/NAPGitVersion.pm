@@ -32,6 +32,20 @@ has limit_tags_re => (
     isa => 'Str',
 );
 
+=head2 C<order>
+
+What order to consider commits in, to get the "closest" tag. Defaults
+to C<topo> (in L<NAP::GitVersion>), can be set to C<date>. See the
+C<git-log> man page for the precise meaning of C<--topo-order> and
+C<--date-order>.
+
+=cut
+
+has order => (
+    is => 'ro',
+    isa => 'Str',
+);
+
 =head1 METHODS
 
 =head2 C<provide_version>
@@ -48,10 +62,12 @@ sub provide_version {
 
     my $exclude_tags_re = $self->exclude_tags_re;
     my $limit_tags_re = $self->limit_tags_re;
+    my $order = $self->order;
     unless (NAP::GitVersion->meta->existing_singleton) {
         NAP::GitVersion->initialize({
             ( defined $exclude_tags_re ? ( exclude_tags_re => $exclude_tags_re ) : () ),
             ( defined $limit_tags_re ? ( limit_tags_re => $limit_tags_re ) : () ),
+            ( defined $order ? ( order => $order ) : () ),
         });
     }
 

@@ -2,6 +2,9 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.5.1     2014-10-15 11:34:02+01:00 Europe/London
+ - actually allow configuring the tag ordering via the dzil plugin
+
 1.5.0     2014-10-15 11:23:12+01:00 Europe/London
  - put the filtering back, this time with proper flushing
  - you can now request date-order (in alternative to the default
