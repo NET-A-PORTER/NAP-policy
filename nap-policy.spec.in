@@ -10,8 +10,6 @@ Vendor:   Net-A-Porter
 Packager: Backend Team <backend@net-a-porter.com>
 BuildArch: noarch
 
-Requires: perl-nap
-
 %description
 NAP-policy - Common policy for NAP modules
 

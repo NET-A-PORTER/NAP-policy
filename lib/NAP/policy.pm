@@ -229,6 +229,11 @@ sub import {
     warnings->import('FATAL'=>'all');
     warnings->unimport('experimental::smartmatch');
 
+    if ($^V ge v5.20) {
+        feature->import('postderef','postderef_qq');
+        warnings->unimport('experimental::postderef');
+    }
+
     namespace::autoclean->import(
         -cleanee => $caller,
         -except => \@no_clean,

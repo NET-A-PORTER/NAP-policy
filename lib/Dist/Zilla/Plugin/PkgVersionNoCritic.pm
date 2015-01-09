@@ -8,6 +8,30 @@ use namespace::autoclean;
 use Moose::Autobox 0.09; # ->flatten
 use List::MoreUtils 'any';
 
+=head1 Attributes
+
+=head2 C<prefer_nap_git_version>
+
+Boolean, defaults to true. When set, the injected version is the full
+C<${tag}.${distance}.g${commit}> as provided by
+L<NAP::GitVersion>. Otherwise, the normal C<< $zilla->version >> value
+is used.
+
+I<NOTE>: the full version string is I<not> a valid Perl version most
+of the time! When you write a library, you should set
+C<prefer_nap_git_version = 0> to make sure that you get nice versions
+that Perl won't be confused by. Otherwise, when loading them like
+C<use My::Library 1.0> you'll get an error "Invalid version format
+(non-numeric data)".
+
+=cut
+
+has prefer_nap_git_version => (
+    is => 'ro',
+    isa => 'Bool',
+    default => 1,
+);
+
 =head1 Overridden methods
 
 =head2 C<munge_perl>
@@ -30,8 +54,9 @@ sub munge_perl {
 
   my $version;
   # are we using our own version provider?
-  if (any { $_->isa('Dist::Zilla::Plugin::NAPGitVersion') }
-          $self->zilla->plugins_with(-VersionProvider)->flatten ) {
+  if ($self->prefer_nap_git_version and
+          any { $_->isa('Dist::Zilla::Plugin::NAPGitVersion') }
+              $self->zilla->plugins_with(-VersionProvider)->flatten ) {
       my ($tag,$distance,$head) = @{NAP::GitVersion->instance->version_info};
       $version = $distance ? "${tag}.${distance}.g${head}" : $tag;
   }

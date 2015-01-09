@@ -70,4 +70,16 @@ throws_ok { PolicyTestTryTiny->foo('bad') }
 ok(-f NAP::policy->critic_profile,
    'the Perl::Critic profile is returned');
 
+if ($^V ge v5.20) {
+    use_ok 'PolicyTest520';
+
+    my $aref = [1,2,3];
+    my @list = PolicyTest520->postderef($aref);
+    cmp_deeply(\@list,$aref,'postderef ok');
+
+    my $href = { a => 1, b => 2, c => 3 };
+    my %hash = PolicyTest520->hash_slice($href);
+    cmp_deeply(\%hash,{a=>1,b=>2},'hash slice ok');
+}
+
 done_testing();

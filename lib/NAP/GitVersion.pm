@@ -160,7 +160,7 @@ sub _parse_tag {
     my ($refs) = @_;
     return unless defined $refs;
     my @tags = map { m{refs/tags/(.*)} }
-        split /\s*,\s*/, 
+        split /\s*,\s*/,
             $refs =~ s{^\s*\(|\)\s*$}{}gr;
     return @tags;
 }

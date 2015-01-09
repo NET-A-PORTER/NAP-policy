@@ -2,6 +2,16 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.6.0     2015-01-09 10:02:14+00:00 Europe/London
+ - PkgVersionNoCritic allows choosing between the "full NAP" version
+   string and the normal Perl version string
+ - minting profile for libraries selects the normal Perl version
+   string
+ - when used under perl 5.20 or later, enable postderef
+ - minting profiles configure NAP::GitVersion to ignore tags that
+   don't look like version nubmers
+ - critic profile is more readable
+
 1.5.1     2014-10-15 11:34:02+01:00 Europe/London
  - actually allow configuring the tag ordering via the dzil plugin
 
