@@ -7,11 +7,13 @@ use Data::Printer;
 use NAP::Exception;
 use 5.014;
 
+## no critic (ProhibitMultiplePackages)
+
 subtest 'simple message' => sub {
     eval { NAP::Exception->throw({message=>'foo'}) }; my $e = $@;
-    like($e->as_string,
-         qr{\A foo \z}smx,
-         'message works');
+    is($e->as_string,
+       'foo',
+       'message works');
     is("$e", $e->as_string, 'string overload works');
 };
 

@@ -133,7 +133,7 @@ EOCONF
     $appender->string('');
 
     # hack to force the time to change
-    my $original_load = \&NAP::Logging::Layout::PatternLayout::Multiline::_load_format_from;
+    my $original_load = \&NAP::Logging::Layout::PatternLayout::Multiline::_load_format_from; ## no critic (ProtectPrivateVars)
     my $override = Sub::Override->new(
         'NAP::Logging::Layout::PatternLayout::Multiline::_load_format_from' => sub {
             sleep 0.1;

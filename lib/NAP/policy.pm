@@ -105,7 +105,7 @@ no longer support L<TryCatch>, so this option does nothing
 use 5.018;
 use strict;
 use warnings FATAL => 'all';
-no warnings 'experimental::smartmatch';
+no warnings 'experimental::smartmatch'; ## no critic (ProhibitNoWarnings)
 use utf8 ();
 use feature ();
 use true ();
@@ -229,7 +229,7 @@ sub import {
     warnings->import('FATAL'=>'all');
     warnings->unimport('experimental::smartmatch');
 
-    if ($^V ge v5.20) {
+    if ($^V ge v5.20) { ## no critic(ProhibitMismatchedOperators)
         feature->import('postderef','postderef_qq');
         warnings->unimport('experimental::postderef');
     }
@@ -238,12 +238,15 @@ sub import {
         -cleanee => $caller,
         -except => \@no_clean,
     );
+
+    return;
 }
 
 sub _autoflush {
+    ## no critic (ProhibitOneArgSelect)
     my($fh) = shift;
     my $old_fh = select $fh;
-    $| = 1;
+    $| = 1; ## no critic (RequireLocalizedPunctuationVars)
     select $old_fh;
 
     return;

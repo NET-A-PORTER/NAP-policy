@@ -2,6 +2,13 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.7.0     2015-01-27 10:15:36+00:00 Europe/London
+ - new Perl Critic profile
+ - new policies: ProhibitExcessMainComplexityScriptAware,
+   RequireArgUnpackingAllowFiltered,
+   ProhibitAugmentedAssignmentInNonLocalDeclaration,
+   ProhibitLocalVarsLaxer
+
 1.6.0     2015-01-09 10:02:14+00:00 Europe/London
  - PkgVersionNoCritic allows choosing between the "full NAP" version
    string and the normal Perl version string

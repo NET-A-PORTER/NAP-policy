@@ -143,7 +143,8 @@ sub _build_rpmtree {
     my $rpmtree = $self->srcroot->subdir('.rpmbuild');
     $rpmtree->rmtree;
 
-    my $rpmarch = qx{uname -i};$rpmarch=~s{\s+}{}g;
+    my $rpmarch = qx{uname -i}; ## no critic (ProhibitBacktickOperators)
+    $rpmarch=~s{\s+}{}g;
 
     for my $subdir (qw(SOURCES RPMS SRPMS BUILD tmp scratch),"RPMS/$rpmarch") {
         $rpmtree->subdir($subdir)->mkpath;
@@ -387,7 +388,7 @@ sub build {
     rename $self->tarball,$self->srcdir->file($self->tarball->basename);
 
     my $build_cmd = $self->rpmbuild_cmd;
-    system @$build_cmd;
+    return system @$build_cmd;
 }
 
 1;

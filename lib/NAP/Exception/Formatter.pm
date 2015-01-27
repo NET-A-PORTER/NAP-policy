@@ -67,6 +67,8 @@ sub _nap_mixed_replacer {
         }
         $hunk->{args}        = [ $hunk->{extra} ? split /;/, $hunk->{extra} : () ];
     }
+
+    return;
 }
 
 # what follows is equivalent to C<< around [qw(_format...)] =>
@@ -75,10 +77,11 @@ sub _nap_mixed_replacer {
 
 my $around = sub {
     my ($orig,$wrap) = @_;
-    ## no critic ProhibitNoStrict
+    ## no critic (ProhibitNoStrict)
     no strict 'refs';
     my $orig_ref = __PACKAGE__->can($orig);
     *{$orig} = sub { $wrap->($orig_ref,@_) };
+    return;
 };
 
 my $filter_undefs = sub {

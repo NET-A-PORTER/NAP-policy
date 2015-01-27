@@ -74,6 +74,8 @@ sub execute {
     });
 
     $builder->build;
+
+    return;
 }
 
 1;

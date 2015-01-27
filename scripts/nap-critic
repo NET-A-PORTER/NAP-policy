@@ -1,0 +1,58 @@
+#!/bin/bash
+# PODNAME: nap-critic
+# ABSTRACT: run Perl Critic on your codebase
+basedir="$(readlink -f "$(dirname "$0")"/..)"
+
+if [[ -d "$basedir/lib" && -d "$basedir/share" ]]; then
+    export PERL5LIB="${basedir}/lib/""${PERL5LIB:+:$PERL5LIB}"
+    profile="${basedir}/share/perlcritic.conf"
+else
+    profile="$(perl -MNAP::policy -e 'print NAP::policy->critic_profile')"
+fi
+
+declare -a args
+args=("$@")
+redir=/dev/stdout
+prologue=''
+if [[ ${#args[*]} -eq 0 ]]; then
+    args=(lib t script*)
+    if [[ -d t_aggregate ]]; then
+        args=(lib t t_aggregate script*)
+    fi
+    redir=critics
+    prologue='# -*- mode: compilation -*-
+'
+fi
+
+(
+    echo -n "$prologue"
+    perlcritic \
+        --profile "$profile" \
+        --verbose '%f:%l:%c:%p %m%n' \
+        --nocolor \
+        "${args[@]}"
+) > "$redir"
+
+exit
+
+=head1 SYNOPSIS
+
+  nap-critic
+
+  nap-critic path/to/file.pm
+
+=head1 DESCRIPTION
+
+Run without arguments, this script will run C<perlcritic> on a few
+usually correct directories under the current one: C<lib>, C<t>,
+C<t_aggregate>, C<script>, C<scripts>. The output will be saved in a
+file called C<critics> in the current directory.
+
+If you provide any arguments, they will be passed straight to
+C<perlcritic>, and the output will not be redirected.
+
+If the script resides in a L<NAP::policy> check-out, it will use the
+libraries and profile from that checkout, otherwise it will use the
+installed ones.
+
+=cut

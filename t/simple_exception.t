@@ -1,5 +1,6 @@
 #!perl
 use NAP::policy 'test';
+## no critic (ProhibitStringyEval)
 
 subtest 'failures' => sub {
     eval q{package Foo;use NAP::policy 'simple_exception';};my $e=$@;

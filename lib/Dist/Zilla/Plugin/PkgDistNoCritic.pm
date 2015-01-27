@@ -76,6 +76,7 @@ EOP
   }
 
   $file->content($document->serialize);
+  return;
 }
 
 __PACKAGE__->meta->make_immutable;
