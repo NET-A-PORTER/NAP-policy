@@ -15,10 +15,8 @@ args=("$@")
 redir=/dev/stdout
 prologue=''
 if [[ ${#args[*]} -eq 0 ]]; then
-    args=(lib t script*)
-    if [[ -d t_aggregate ]]; then
-        args=(lib t t_aggregate script*)
-    fi
+    shopt -q -s nullglob
+    args=(lib t script* t_*)
     redir=critics
     prologue='# -*- mode: compilation -*-
 '

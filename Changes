@@ -2,6 +2,10 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.7.1     2015-02-26 14:30:54+00:00 Europe/London
+- make sure no policies get picked up by Perl::Critic unless we
+  explicitly enable them
+
 1.7.0     2015-01-27 10:15:36+00:00 Europe/London
  - new Perl Critic profile
  - new policies: ProhibitExcessMainComplexityScriptAware,
