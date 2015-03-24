@@ -16,6 +16,7 @@ use NAP::GitVersion;
      spec_in_file   => $your_spec_template,
      rpm_version    => $your_version,
      rpm_name       => $your_package_name,
+     extra_requires => { $module => $version, ... },
   })->build;
 
 =head1 ATTRIBUTES
@@ -50,6 +51,9 @@ sub _build_srcroot { dir() };
 =head2 C<spec_in_file>
 
 TT file to build the specfile from.
+
+See L</SPECFILE TEMPLATE REFERENCE> to see what you can use in your
+templates.
 
 =cut
 
@@ -117,6 +121,37 @@ has rpm_name => (
     required => 1,
 );
 
+=head2 C<extra_requires>
+
+I<HashRef> of additional dependencies. The C<[% EXTRA_REQUIRES %]>
+variable can be used in the C</spec_in_file> to inject these into the
+specfile. For example, a C<extra_requires> of:
+
+  { 'perl-nap(Foo)' => 0, 'some-lib' => '1.3' }
+
+would cause C<[% EXTRA_REQUIRES %]> to expand to:
+
+  Requires: perl-nap(Foo)
+  Requires: some-lib >= 1.3
+
+=cut
+
+has extra_requires => (
+    is => 'ro',
+    isa => 'HashRef',
+    default => sub { {} },
+);
+
+sub _extra_requires_str {
+    my ($self) = @_;
+
+    my $reqs = $self->extra_requires;
+
+    join "\n",
+        map { "Requires: $_". ($reqs->{$_} ? " >= $reqs->{$_}" : "") }
+        sort keys %$reqs;
+}
+
 =head2 C<rpmtree>
 
 Directory where RPM will work (i.e. it contains C<SOURCES>, C<RPMS>,
@@ -158,8 +193,6 @@ sub _build_rpmtree {
 The actual spec file, created from the L</spec_in_file> template.
 
 NOTE: can't be set via the constructor.
-
-TODO: document the template params used.
 
 =cut
 
@@ -301,7 +334,7 @@ sub _create_spec {
     printf $spec_out_fh "%%define dist_tarball_dir %s\n",
         $self->tarball_dirname;
 
-    my $template = _template();
+    my $template = $self->_template();
 
     $template->process($spec_in->stringify,
                        {},
@@ -316,6 +349,7 @@ sub _create_spec {
 }
 
 sub _template {
+    my ($self) = @_;
     my $template = Template->new(\%TEMPLATE_CONFIG);
     # backward compatibility for [% MANIFEST %] users; defaulting to
     # nobody/nobody
@@ -323,13 +357,25 @@ sub _template {
     # inject it into the config, then reload with the updated config
     # (there has to be a better way to do this, but for now, we'll go with
     # something that works - CCW)
-    my $manifest_blob;
+    my $tmp_blob;
     $template->process(
         \$TEMPLATE_CONFIG{BLOCKS}{MANIFEST},
         { user => 'nobody', group => 'nobody' },
-        \$manifest_blob
+        \$tmp_blob
     );
-    $TEMPLATE_CONFIG{VARIABLES}{MANIFEST} = $manifest_blob;
+    $TEMPLATE_CONFIG{VARIABLES}{MANIFEST} = $tmp_blob;
+
+    # backward compatibility for [% INSTALL %] users; defaulting to
+    # lib,scripts,conf
+    # Same trick as above.
+    $template->process(
+        \$TEMPLATE_CONFIG{BLOCKS}{INSTALL},
+        { dirs => [qw(lib scripts conf)] },
+        \$tmp_blob
+    );
+    $TEMPLATE_CONFIG{VARIABLES}{INSTALL} = $tmp_blob;
+
+    $TEMPLATE_CONFIG{VARIABLES}{EXTRA_REQUIRES} = $self->_extra_requires_str;
     return Template->new(\%TEMPLATE_CONFIG);
 }
 }
@@ -390,5 +436,100 @@ sub build {
     my $build_cmd = $self->rpmbuild_cmd;
     return system @$build_cmd;
 }
+
+=head1 SPECFILE TEMPLATE REFERENCE
+
+=head2 TT I<blocks>
+
+=over 4
+
+=item C<NAPDIRS>
+
+C<%define>s some RPM variables used in the expansion of other
+blocks. Use it at the top of your application's specfile templates.
+
+  [% INCLUDE NAPDIRS deploydir='one' sysdir='two' %]
+
+expands to:
+
+  %define NAP_BASE_DIR /opt/one
+  %define NAP_CONF_DIR /etc/two
+  %define NAP_LOGS_DIR /var/log/nap/two
+  %define NAP_PID_DIR  /var/run/nap/two
+
+=item C<INSTALL>
+
+Performs the steps to install your application's files into the build
+root. Use it at the beginning of your application's specfile template
+C<%install> section.
+
+  [% INCLUDE INSTALL dirs=['one','two','three'] %]
+
+creates C<%NAP_BASE_DIR>, C<%NAP_LOGS_DIR>, C<%NAP_PID_DIR> under the
+buildroot, then copies all the files from C<dirs> to inside the
+
+=item C<MANIFEST>
+
+Performs the steps to build the RPM manifest, making sure everything
+belongs to the given user and group. Use it at the end of your
+application's specfile template C<%install> section.
+
+  [% INCLUDE MANIFEST user='one', group='two' %]
+
+=back
+
+=head2 TT I<variables>
+
+=over 4
+
+=item C<SETUP>
+
+Tells RPM which tarball to use. Use it just after your specfile
+template's C<%prep> section.
+
+  [% SETUP %]
+
+=item C<DEPS>
+
+Overrides the automatic provides/requires detection scripts to use the
+C<perl-nap()> namespace instead of C<perl()> (otherwise we'd end up
+depending on system perl's modules, instead of our own).
+
+Use it before your specfile template's C<%install> section.
+
+  [% DEPS %]
+
+=item C<EXTRA_REQUIRES>
+
+Injects all the Perl dependencies passed in L</extra_requires> (these
+usually come from L<Dist::Zilla> via
+L<Dist::Zilla::App::Command::rpmbuild>). Use it together with your
+explicit dependency listing, usually before the C<%description>
+section.
+
+  [% EXTRA_REQUIRES %]
+
+=item C<REQUIRES_PERL_NAP>
+
+Deprecated. Emits a set of C<Requires> to match the C<perl-nap> that
+this RPM was built with. You should be depending on actual perl
+modules, not on the whole C<perl-nap> RPM. Also, we're migrating away
+from the monolithic C<perl-nap>.
+
+=item C<INSTALL>
+
+Deprecated. Use the C<INSTALL> I<block> instead:
+
+  [% INCLUDE INSTALL dirs=['conf','lib','scripts'] %]
+
+=item C<MANIFEST>
+
+Deprecated. Use the C<MANIFEST> I<block> instead:
+
+  [% INCLUDE MANIFEST user='nobody', group='nobody' %]
+
+=back
+
+=cut
 
 1;

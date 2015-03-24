@@ -45,6 +45,34 @@ sub _build_rpm_version {
 
 sub abstract { 'build an RPM, NAP-style' }
 
+has _prereqs => (
+    is => 'ro',
+    lazy_build => 1,
+);
+sub _build__prereqs {
+    my ($self) = @_;
+
+    my $m = $self->zilla->prereqs->requirements_for('runtime','requires');
+    my %reqs;
+    for my $module ($m->required_modules) {
+        # we don't want to depend on the perl program itself: RPM uses
+        # a different versioning system, and it will get very confused
+        # if we do
+        next if $module eq 'perl';
+
+        my $req = $m->requirements_for_module($module);
+        # this test is copied from
+        # CPAN::Meta::Requirements::is_simple, where it is described
+        # as "This is a complete hack, but also entirely correct"
+        if ($req =~ /\s/) {
+            $self->log("Complex requirement for $module ($req), ignoring it since we don't know how to represent it to RPM");
+            next;
+        }
+        $reqs{"perl-nap($module)"} = $req;
+    }
+    return \%reqs;
+}
+
 sub execute {
     my ($self, $opt, $args) = @_;
 
@@ -71,6 +99,7 @@ sub execute {
         tarball => $tarball,
         rpm_version => $self->rpm_version,
         rpm_name => $self->zilla->name,
+        extra_requires => $self->_prereqs,
     });
 
     $builder->build;

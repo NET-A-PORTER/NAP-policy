@@ -20,7 +20,7 @@ Vendor:   Net-A-Porter
 Packager: Backend Team <backend@net-a-porter.com>
 BuildArch: noarch
 
-Requires: perl-nap
+[% EXTRA_REQUIRES %]
 
 %description
 {{ $dist->name }} - something something CHANGEME
@@ -40,4 +40,4 @@ make
 
 make pure_install PERL_INSTALL_ROOT=$RPM_BUILD_ROOT
 
-[% MANIFEST %]
+[% INCLUDE MANIFEST user='nobody', group='nobody' %]
