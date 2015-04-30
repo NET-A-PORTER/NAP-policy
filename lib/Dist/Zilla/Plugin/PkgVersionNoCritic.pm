@@ -101,9 +101,9 @@ sub munge_perl {
     # enough in the past that I'm keeping it here until tests are better
     my $trial = $self->zilla->is_trial ? ' # TRIAL' : '';
     my $perl = <<"EOP";
-BEGIN {  ## no critic (RequireUseStrict, RequireUseWarnings)
-  \$$package\::VERSION\x20=\x20'$version';$trial ## no critic (RequireUseStrict, RequireUseWarnings)
-}  ## no critic (RequireUseStrict, RequireUseWarnings)
+BEGIN {  ## no critic (RequireUseStrict, RequireUseWarnings, ProhibitUselessNoCritic)
+  \$$package\::VERSION\x20=\x20'$version';$trial ## no critic (RequireUseStrict, RequireUseWarnings, ProhibitUselessNoCritic)
+}  ## no critic (RequireUseStrict, RequireUseWarnings, ProhibitUselessNoCritic)
 EOP
 
     my $version_doc = PPI::Document->new(\$perl);

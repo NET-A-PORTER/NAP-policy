@@ -97,6 +97,7 @@ sub execute {
         srcroot => $self->zilla->root,
         spec_in_file => $spec_in,
         tarball => $tarball,
+        tarball_dirname => $self->zilla->dist_basename,
         rpm_version => $self->rpm_version,
         rpm_name => $self->zilla->name,
         extra_requires => $self->_prereqs,

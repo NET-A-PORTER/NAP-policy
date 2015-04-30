@@ -4,7 +4,8 @@ use Dist::Zilla 4 ();
 use Moose;
 use namespace::autoclean;
 use NAP::GitVersion;
-with 'Dist::Zilla::Role::VersionProvider';
+with 'Dist::Zilla::Role::VersionProvider',
+    'Dist::Zilla::Role::ReleaseStatusProvider';
 
 =head1 ATTRIBUTES
 
@@ -55,15 +56,13 @@ Perl-style version info from the Git log.
 
 =cut
 
-sub provide_version {
+sub _get_gitversion {
     my ($self) = @_;
 
-    return $ENV{V} if exists $ENV{V};
-
-    my $exclude_tags_re = $self->exclude_tags_re;
-    my $limit_tags_re = $self->limit_tags_re;
-    my $order = $self->order;
     unless (NAP::GitVersion->meta->existing_singleton) {
+        my $exclude_tags_re = $self->exclude_tags_re;
+        my $limit_tags_re = $self->limit_tags_re;
+        my $order = $self->order;
         NAP::GitVersion->initialize({
             ( defined $exclude_tags_re ? ( exclude_tags_re => $exclude_tags_re ) : () ),
             ( defined $limit_tags_re ? ( limit_tags_re => $limit_tags_re ) : () ),
@@ -71,7 +70,33 @@ sub provide_version {
         });
     }
 
-    return NAP::GitVersion->instance->perl_style_version_string;
+    return NAP::GitVersion->instance;
+}
+
+sub provide_version {
+    my ($self) = @_;
+
+    return $ENV{V} if exists $ENV{V};
+
+    return $self->_get_gitversion->perl_style_version_string;
+}
+
+=head2 C<provide_release_status>
+
+Calls to L<NAP::GitVersion/tag_distance> to see if we are building on
+a tag.  Returns C<'stable'> if we are, C<'testing'> otherwise. This
+makes sure that all our metadata is consistent.
+
+=cut
+
+sub provide_release_status {
+    my ($self) = @_;
+
+    # if a version is provided via the environment, let dzil sort it out
+    return if exists $ENV{V};
+
+    # otherwise, we are stable if we're building on a tag
+    return $self->_get_gitversion->tag_distance > 0 ? 'testing' : 'stable';
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -39,7 +39,7 @@ BuildArch: noarch
 
 %install
 
-[% INCLUDE INSTALL dirs=['conf','lib','script'] %]
+[% INCLUDE INSTALL dirs=['conf','lib','scripts'] %]
 
 install --directory ${RPM_BUILD_ROOT}/etc/[% application_shortname.lower %]
 # install your config here

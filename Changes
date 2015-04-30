@@ -2,6 +2,14 @@ Revision history for NAP::policy
 
 {{$NEXT}}
 
+1.7.4     2015-04-30 11:30:08+01:00 Europe/London
+ - refactored minting profiles
+ - minting profiles now include build.yaml
+ - fix critic errors from dzil $VERSION/$DIST plugins
+ - provide release status to newer dzil
+ - use the correct dirname for tarballs in rpmbuild, instead of
+   guessing
+
 1.7.3     2015-03-24 15:39:51+00:00 Europe/London
  - specfile templates can now use [% EXTRA_REQUIRES %] to inject
    RPM-level requirements for all perl modules that dzil detected

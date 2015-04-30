@@ -56,9 +56,9 @@ sub munge_perl {
     # an assignment to version; it shouldn't be needed, but it's been annoying
     # enough in the past that I'm keeping it here until tests are better
     my $perl = <<"EOP";
-BEGIN {  ## no critic (RequireUseStrict, RequireUseWarnings)
-  \$$package\::DIST\x20=\x20'$dist_name';  ## no critic (RequireUseStrict, RequireUseWarnings)
-}  ## no critic (RequireUseStrict, RequireUseWarnings)
+BEGIN {  ## no critic (RequireUseStrict, RequireUseWarnings, ProhibitUselessNoCritic)
+  \$$package\::DIST\x20=\x20'$dist_name';  ## no critic (RequireUseStrict, RequireUseWarnings, ProhibitUselessNoCritic)
+}  ## no critic (RequireUseStrict, RequireUseWarnings, ProhibitUselessNoCritic)
 EOP
 
     my $dist_doc = PPI::Document->new(\$perl);

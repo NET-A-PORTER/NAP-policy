@@ -1,0 +1,25 @@
+# Continuous Deployment Pipeline Build Configuration for branch: */master
+
+###########################################################
+# BUILD CONFIGURATION
+###########################################################
+build:
+  git.branch: "*/master"
+  slave.node: "dev-perl-nap-xt"
+  artefact.type: "{{ $dist->root =~ m{/minting-profiles/library$} ? 'packageRpmDependency' : 'package' }}"
+
+###########################################################
+# TEST CONFIGURATION
+###########################################################
+test:
+  unit.enabled: true
+  regression.enabled: false
+  coverage.enabled: false
+  load.enabled: false
+
+###########################################################
+# NOTIFICATION CONFIGURATION
+###########################################################
+notify:
+  email: "CHANGEME@net-a-porter.com"
+  sonar.enabled: false
